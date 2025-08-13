@@ -27,6 +27,7 @@ class ApiConfig {
   
   // URL completa para endpoints específicos
   static String get loginUrl => getAuthUrl('/login');
+  static String get registerUrl => getAuthUrl('/register');
   static String get patientMeUrl => getPatientsUrl('/me');
   static String get appointmentsUrl => getAppointmentsUrl('');
   static String get achievementsUrl => getGamificationUrl('/achievements');
@@ -41,5 +42,6 @@ class ApiConfig {
   static String get dashboardUrl => getGamificationUrl('/dashboard');
   
   // Métodos para URLs con parámetros
+  static String getAppointmentUrl(int id) => getAppointmentsUrl('/$id');
   static String getNotificationReadUrl(int notificationId) => getGamificationUrl('/notifications/$notificationId/read');
 } 

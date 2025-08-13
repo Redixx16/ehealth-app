@@ -51,11 +51,19 @@ class _HomeDispatcherScreenState extends State<HomeDispatcherScreen> {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const PatientMainScreen()),
           );
-        } else if (state is PatientError) {
+        } else if (state is PatientProfileNotFound) {
           // Perfil no encontrado, ir a la pantalla de registro
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
                 builder: (_) => const PatientRegistrationScreen()),
+          );
+        } else if (state is PatientError) {
+          // Ocurrió un error inesperado
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.redAccent,
+            ),
           );
         }
       },

@@ -1,5 +1,4 @@
 // lib/presentation/screens/patient/patient_main_screen.dart
-import 'package:ehealth_app/data/datasources/auth_remote_data_source.dart';
 import 'package:ehealth_app/presentation/bloc/login/login_bloc.dart';
 import 'package:ehealth_app/presentation/screens/auth/login_screen.dart';
 import 'package:ehealth_app/presentation/screens/patient/patient_profile_page.dart';

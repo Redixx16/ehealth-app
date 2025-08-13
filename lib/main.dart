@@ -16,19 +16,19 @@ const Color kBackgroundColorProfessional = Color(0xFFF5F7FA);
 Future<void> main() async {
   // Asegura que los bindings de Flutter estén listos antes de ejecutar código nativo.
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Inicializa el locale español para el formateo de fechas
   await initializeDateFormatting('es_ES', null);
-  
+
   // Inicializa nuestro contenedor de dependencias antes de correr la app.
   await di.setupLocator();
-  
+
   // Muestra información de configuración en desarrollo
   if (EnvironmentConfig.enableLogging) {
     print('🚀 Iniciando EHealth App...');
     print(EnvironmentConfig.environmentInfo);
   }
-  
+
   // Ejecuta la aplicación.
   runApp(const MyApp());
 }
@@ -71,7 +71,7 @@ class MyApp extends StatelessWidget {
             fillColor: Colors.white,
           ),
         ),
-        home: LoginScreen(),
+        home: const LoginScreen(),
       ),
     );
   }

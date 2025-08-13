@@ -16,6 +16,11 @@ class NotFoundException implements Exception {
   NotFoundException({this.message = 'Recurso no encontrado.'});
 }
 
+class PatientNotFoundException implements Exception {
+  final String message;
+  PatientNotFoundException({this.message = 'Perfil de paciente no encontrado.'});
+}
+
 class NetworkException implements Exception {
   final String message;
   NetworkException(

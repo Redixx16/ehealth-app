@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:ehealth_app/injection_container.dart' as di; // Importa GetIt
+import 'package:ehealth_app/injection_container.dart' as di;
 import '../../bloc/register/register_bloc.dart';
 
 // Reutilizamos la paleta de colores de la pantalla de login para consistencia
@@ -112,7 +112,6 @@ class _RegisterScreenState extends State<RegisterScreen>
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      // CORRECCIÓN: Usamos GetIt para crear el BLoC
       create: (_) => di.locator<RegisterBloc>(),
       child: Scaffold(
         backgroundColor: kBackgroundColor,
@@ -337,46 +336,66 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
+  // ================== BOTÓN COMPLETAMENTE REESCRITO (VERSIÓN FINAL) ==================
   Widget _buildRegisterButton(BuildContext context, RegisterState state) {
     final isLoading = state is RegisterLoading;
-    return GestureDetector(
-      onTap: isLoading ? null : () => _onRegister(context),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        height: 50,
-        width: isLoading ? 50 : double.infinity,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [kPrimaryLightColor, kPrimaryColor],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
+
+    return SizedBox(
+      height: 50,
+      width: double.infinity, // Ocupa todo el ancho
+      child: ElevatedButton(
+        onPressed: isLoading ? null : () => _onRegister(context),
+        style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.zero, // Importante para que el Ink ocupe todo
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
           ),
-          borderRadius: BorderRadius.circular(isLoading ? 25 : 30),
-          boxShadow: [
-            if (!isLoading)
-              BoxShadow(
-                color: kPrimaryColor.withOpacity(0.4),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              )
-          ],
+          shadowColor: Colors.transparent,
+          backgroundColor: Colors.transparent, // El color lo da el Ink
         ),
-        child: Center(
-          child: isLoading
-              ? const CircularProgressIndicator(
-                  color: Colors.white, strokeWidth: 2.5)
-              : Text(
-                  'Registrarme',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(30),
+            gradient: const LinearGradient(
+              colors: [kPrimaryLightColor, kPrimaryColor],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            boxShadow: [
+              // Solo muestra sombra si no está cargando
+              if (!isLoading)
+                BoxShadow(
+                  color: kPrimaryColor.withOpacity(0.4),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                )
+            ],
+          ),
+          child: Container(
+            alignment: Alignment.center,
+            child: isLoading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Colors.white,
+                    ),
+                  )
+                : Text(
+                    'Registrarme',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
+          ),
         ),
       ),
     );
   }
+  // ==================================================================================
 
   Widget _buildDecorativeShape() {
     return Positioned(

@@ -6,7 +6,6 @@ import 'package:ehealth_app/data/models/pregnancy_milestone_model.dart';
 import 'package:ehealth_app/data/models/notification_model.dart';
 import 'package:ehealth_app/core/config/api_config.dart';
 
-// La clase abstracta no cambia
 abstract class GamificationRemoteDataSource {
   Future<List<AchievementModel>> getAchievements();
   Future<UserProgressModel> getUserProgress();

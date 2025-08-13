@@ -12,6 +12,9 @@ class PatientInitial extends PatientState {}
 
 class PatientLoading extends PatientState {}
 
+class PatientProfileNotFound extends PatientState {}
+
+
 class PatientLoaded extends PatientState {
   final Patient patient;
 

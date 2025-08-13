@@ -10,7 +10,7 @@ class AuthRemoteDataSource {
   Future<String> login(String email, String password) async {
     try {
       final response = await _apiClient.post(
-        ApiConfig.authEndpoint + '/login',
+        ApiConfig.loginUrl,
         body: {'email': email, 'password': password},
       );
       return response['access_token'];
@@ -27,7 +27,7 @@ class AuthRemoteDataSource {
       String email, String password, String role, String fullName) async {
     try {
       await _apiClient.post(
-        ApiConfig.authEndpoint + '/register',
+        ApiConfig.registerUrl,
         body: {
           'email': email,
           'password': password,

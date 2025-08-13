@@ -21,7 +21,7 @@ class ApiClient {
   }
 
   Future<dynamic> get(String endpoint) async {
-    final uri = Uri.parse(ApiConfig.baseUrl + endpoint);
+    final uri = Uri.parse(endpoint);
     try {
       final response = await client
           .get(uri, headers: await _getHeaders())
@@ -39,7 +39,7 @@ class ApiClient {
   }
 
   Future<dynamic> post(String endpoint, {dynamic body}) async {
-    final uri = Uri.parse(ApiConfig.baseUrl + endpoint);
+    final uri = Uri.parse(endpoint);
     try {
       final response = await client
           .post(
@@ -61,7 +61,7 @@ class ApiClient {
   }
 
   Future<dynamic> patch(String endpoint, {dynamic body}) async {
-    final uri = Uri.parse(ApiConfig.baseUrl + endpoint);
+    final uri = Uri.parse(endpoint);
     try {
       final response = await client
           .patch(
@@ -83,7 +83,7 @@ class ApiClient {
   }
 
   Future<dynamic> delete(String endpoint) async {
-    final uri = Uri.parse(ApiConfig.baseUrl + endpoint);
+    final uri = Uri.parse(endpoint);
     try {
       final response = await client
           .delete(uri, headers: await _getHeaders())

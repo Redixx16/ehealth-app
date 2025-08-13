@@ -1,9 +1,17 @@
+// lib/presentation/screens/patient/patient_registration_screen.dart
 import 'package:ehealth_app/domain/entities/patient.dart';
 import 'package:ehealth_app/presentation/bloc/patient/patient_bloc.dart';
-import 'package:ehealth_app/presentation/screens/patient/patient_home_screen.dart';
+import 'package:ehealth_app/presentation/screens/patient/patient_main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+
+// Paleta de colores consistente
+const Color kPrimaryColor = Color(0xFFF48FB1);
+const Color kPrimaryLightColor = Color(0xFFF8BBD0);
+const Color kBackgroundColor = Color(0xFFFFF7F8);
+const Color kTextColor = Color(0xFF424242);
 
 class PatientRegistrationScreen extends StatefulWidget {
   const PatientRegistrationScreen({super.key});
@@ -16,7 +24,6 @@ class PatientRegistrationScreen extends StatefulWidget {
 class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  // Controladores para cada campo del formulario
   final _fullNameController = TextEditingController();
   final _nationalIdController = TextEditingController();
   final _addressController = TextEditingController();
@@ -30,7 +37,6 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
 
   @override
   void dispose() {
-    // Limpiar los controladores
     _fullNameController.dispose();
     _nationalIdController.dispose();
     _addressController.dispose();
@@ -47,8 +53,19 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(1920),
+      firstDate: DateTime(1950),
       lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            primaryColor: kPrimaryColor,
+            colorScheme: const ColorScheme.light(primary: kPrimaryColor),
+            buttonTheme:
+                const ButtonThemeData(textTheme: ButtonTextTheme.primary),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null) {
       onDateSelected(picked);
@@ -58,22 +75,17 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      // Si el formulario es válido, crea la entidad Patient
-      // NOTA: El ID y la fecha probable de parto se calculan en el backend.
-      // Aquí pasamos valores dummy que serán ignorados.
       final newPatient = Patient(
-        id: 0, // Dummy
-        fullName: _fullNameController.text,
+        id: 0,
+        fullName: _fullNameController.text.trim(),
         dateOfBirth: _dateOfBirth!,
-        nationalId: _nationalIdController.text,
-        address: _addressController.text,
-        phoneNumber: _phoneNumberController.text,
+        nationalId: _nationalIdController.text.trim(),
+        address: _addressController.text.trim(),
+        phoneNumber: _phoneNumberController.text.trim(),
         lastMenstrualPeriod: _lastMenstrualPeriod!,
-        estimatedDueDate: DateTime.now(), // Dummy
-        medicalHistory: _medicalHistoryController.text,
+        estimatedDueDate: DateTime.now(),
+        medicalHistory: _medicalHistoryController.text.trim(),
       );
-
-      // Despacha el evento al BLoC
       context.read<PatientBloc>().add(CreatePatient(newPatient));
     }
   }
@@ -81,129 +93,219 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kBackgroundColor,
       body: BlocListener<PatientBloc, PatientState>(
         listener: (context, state) {
           if (state is PatientError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Error: ${state.message}'),
-                backgroundColor: Colors.red,
+                content: Text('Error al registrar: ${state.message}'),
+                backgroundColor: Colors.redAccent,
               ),
             );
           } else if (state is PatientLoaded) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Paciente registrada con éxito'),
+                content: Text('¡Perfil creado con éxito! Bienvenida.'),
                 backgroundColor: Colors.green,
               ),
             );
-            // Navegar a la pantalla de perfil del paciente
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const PatientHomeScreen()),
+              MaterialPageRoute(builder: (_) => const PatientMainScreen()),
             );
           }
         },
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  TextFormField(
-                    controller: _fullNameController,
-                    decoration: const InputDecoration(labelText: 'Nombre Completo'),
-                    validator: (value) =>
-                        value!.isEmpty ? 'Campo requerido' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _nationalIdController,
-                    decoration: const InputDecoration(labelText: 'DNI / Cédula'),
-                    validator: (value) =>
-                        value!.isEmpty ? 'Campo requerido' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _dateOfBirthController,
-                    decoration: const InputDecoration(
-                      labelText: 'Fecha de Nacimiento',
-                      suffixIcon: Icon(Icons.calendar_today),
-                    ),
-                    readOnly: true,
-                    onTap: () => _selectDate(
-                      context,
-                      controller: _dateOfBirthController,
-                      onDateSelected: (date) =>
-                          setState(() => _dateOfBirth = date),
-                    ),
-                    validator: (value) =>
-                        value!.isEmpty ? 'Campo requerido' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _addressController,
-                    decoration: const InputDecoration(labelText: 'Dirección'),
-                    validator: (value) =>
-                        value!.isEmpty ? 'Campo requerido' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _phoneNumberController,
-                    decoration: const InputDecoration(labelText: 'Teléfono'),
-                    keyboardType: TextInputType.phone,
-                    validator: (value) =>
-                        value!.isEmpty ? 'Campo requerido' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _lastMenstrualPeriodController,
-                    decoration: const InputDecoration(
-                      labelText: 'Fecha de Última Regla (FUR)',
-                      suffixIcon: Icon(Icons.calendar_today),
-                    ),
-                    readOnly: true,
-                    onTap: () => _selectDate(
-                      context,
-                      controller: _lastMenstrualPeriodController,
-                      onDateSelected: (date) =>
-                          setState(() => _lastMenstrualPeriod = date),
-                    ),
-                    validator: (value) =>
-                        value!.isEmpty ? 'Campo requerido' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _medicalHistoryController,
-                    decoration: const InputDecoration(
-                        labelText: 'Historial Médico Relevante'),
-                    maxLines: 3,
-                  ),
+                  _buildHeader(),
                   const SizedBox(height: 32),
-                  BlocBuilder<PatientBloc, PatientState>(
-                    builder: (context, state) {
-                      if (state is PatientLoading) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      return ElevatedButton(
-                        onPressed: _submitForm,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text('Registrar Paciente'),
-                      );
-                    },
-                  ),
+                  _buildTextFormField(
+                      controller: _fullNameController,
+                      labelText: 'Nombre Completo',
+                      icon: Icons.person_outline),
+                  const SizedBox(height: 16),
+                  _buildTextFormField(
+                      controller: _nationalIdController,
+                      labelText: 'DNI / Cédula',
+                      icon: Icons.badge_outlined,
+                      keyboardType: TextInputType.number),
+                  const SizedBox(height: 16),
+                  _buildDateFormField(
+                      controller: _dateOfBirthController,
+                      labelText: 'Fecha de Nacimiento',
+                      onDateSelected: (date) =>
+                          setState(() => _dateOfBirth = date)),
+                  const SizedBox(height: 16),
+                  _buildTextFormField(
+                      controller: _addressController,
+                      labelText: 'Dirección',
+                      icon: Icons.home_outlined),
+                  const SizedBox(height: 16),
+                  _buildTextFormField(
+                      controller: _phoneNumberController,
+                      labelText: 'Teléfono',
+                      icon: Icons.phone_outlined,
+                      keyboardType: TextInputType.phone),
+                  const SizedBox(height: 16),
+                  _buildDateFormField(
+                      controller: _lastMenstrualPeriodController,
+                      labelText: 'Fecha de Última Regla (FUR)',
+                      onDateSelected: (date) =>
+                          setState(() => _lastMenstrualPeriod = date)),
+                  const SizedBox(height: 16),
+                  _buildTextFormField(
+                      controller: _medicalHistoryController,
+                      labelText: 'Historial Médico Relevante',
+                      icon: Icons.medical_services_outlined,
+                      maxLines: 3),
+                  const SizedBox(height: 32),
+                  _buildSubmitButton(),
                 ],
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Completa tu perfil',
+          style: GoogleFonts.poppins(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: kTextColor,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Necesitamos algunos datos para empezar a cuidarte.',
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            color: kTextColor.withOpacity(0.6),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextFormField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData icon,
+    int? maxLines = 1,
+    TextInputType? keyboardType,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: _buildInputDecoration(hintText: labelText, icon: icon),
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      validator: (value) => (value == null || value.trim().isEmpty)
+          ? 'Este campo es requerido'
+          : null,
+    );
+  }
+
+  Widget _buildDateFormField({
+    required TextEditingController controller,
+    required String labelText,
+    required ValueChanged<DateTime> onDateSelected,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: _buildInputDecoration(
+          hintText: labelText, icon: Icons.calendar_today_outlined),
+      readOnly: true,
+      onTap: () => _selectDate(
+        context,
+        controller: controller,
+        onDateSelected: onDateSelected,
+      ),
+      validator: (value) =>
+          (value == null || value.isEmpty) ? 'Selecciona una fecha' : null,
+    );
+  }
+
+  InputDecoration _buildInputDecoration(
+      {required String hintText, required IconData icon}) {
+    return InputDecoration(
+      prefixIcon: Icon(icon, color: kPrimaryColor.withOpacity(0.8)),
+      hintText: hintText,
+      hintStyle: GoogleFonts.poppins(color: kTextColor.withOpacity(0.6)),
+      filled: true,
+      fillColor: Colors.white.withOpacity(0.8),
+      contentPadding:
+          const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(30),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(30),
+        borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+      ),
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return BlocBuilder<PatientBloc, PatientState>(
+      builder: (context, state) {
+        final isLoading = state is PatientLoading;
+        // CORRECCIÓN: Calculamos el ancho finito del botón
+        final screenWidth = MediaQuery.of(context).size.width;
+        final buttonWidth =
+            screenWidth - 48; // Restamos el padding horizontal (24*2)
+
+        return GestureDetector(
+          onTap: isLoading ? null : _submitForm,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            height: 50,
+            // CORRECCIÓN: Usamos el ancho finito en lugar de double.infinity
+            width: isLoading ? 50 : buttonWidth,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [kPrimaryLightColor, kPrimaryColor],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(isLoading ? 25 : 30),
+              boxShadow: [
+                if (!isLoading)
+                  BoxShadow(
+                    color: kPrimaryColor.withOpacity(0.4),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  )
+              ],
+            ),
+            child: Center(
+              child: isLoading
+                  ? const CircularProgressIndicator(
+                      color: Colors.white, strokeWidth: 2.5)
+                  : Text(
+                      'Guardar Perfil',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

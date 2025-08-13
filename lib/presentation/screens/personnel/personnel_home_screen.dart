@@ -84,7 +84,7 @@ class PersonnelHomeScreen extends StatelessWidget {
                 MaterialPageRoute(
                     builder: (context) => BlocProvider(
                         create: (context) => di.locator<LoginBloc>(),
-                        child: LoginScreen())),
+                        child: const LoginScreen())),
                 (Route<dynamic> route) => false,
               );
             }
