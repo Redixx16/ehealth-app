@@ -1,4 +1,4 @@
-// lib/presentation/screens/appointment_detail_screen.dart
+// lib/presentation/screens/appointments/appointment_detail_screen.dart
 import 'package:ehealth_app/data/datasources/appointment_remote_data_source.dart';
 import 'package:ehealth_app/domain/entities/appointment.dart';
 import 'package:ehealth_app/presentation/bloc/delete_appointment/delete_appointment_bloc.dart';
@@ -8,6 +8,8 @@ import 'package:ehealth_app/presentation/screens/appointments/edit_appointment_s
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:ehealth_app/injection_container.dart'
+    as di; // <-- Importa GetIt
 
 class AppointmentDetailScreen extends StatefulWidget {
   final Appointment appointment;
@@ -26,13 +28,15 @@ class AppointmentDetailScreen extends StatefulWidget {
 
 class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
   late Appointment _currentAppointment;
-  final AppointmentRemoteDataSource _dataSource = AppointmentRemoteDataSource();
+  // Usamos GetIt para obtener la instancia del DataSource
+  final AppointmentRemoteDataSource _dataSource =
+      di.locator<AppointmentRemoteDataSource>();
 
   @override
   void initState() {
     super.initState();
     _currentAppointment = widget.appointment;
-    _refreshAppointmentDetails(); // Carga los detalles más recientes al entrar
+    _refreshAppointmentDetails();
   }
 
   Future<void> _refreshAppointmentDetails() async {
@@ -45,14 +49,16 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
         });
       }
     } catch (e) {
-      print("Error al refrescar la cita: $e");
+      // El print ha sido eliminado para seguir las buenas prácticas.
+      // En un futuro, aquí iría un logger: log.error("Error al refrescar la cita: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => DeleteAppointmentBloc(),
+      // Ahora creamos el BLoC usando nuestro contenedor de dependencias
+      create: (context) => di.locator<DeleteAppointmentBloc>(),
       child: Scaffold(
         backgroundColor: Colors.grey[100],
         appBar: AppBar(
@@ -86,8 +92,7 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
         body: BlocListener<DeleteAppointmentBloc, DeleteAppointmentState>(
           listener: (context, state) {
             if (state is DeleteAppointmentSuccess) {
-              Navigator.of(context)
-                  .pop(true); // Devuelve 'true' para indicar éxito
+              Navigator.of(context).pop(true);
             }
             if (state is DeleteAppointmentFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -100,10 +105,8 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Sección de Información General
                 _buildInfoCard(context),
                 const SizedBox(height: 20),
-                // Sección de Recomendaciones
                 _buildRecommendationsCard(context),
               ],
             ),
@@ -119,7 +122,6 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                           appointment: _currentAppointment),
                     ),
                   );
-                  // Si la pantalla de edición devuelve 'true', refrescamos
                   if (result == true && mounted) {
                     _refreshAppointmentDetails();
                   }
@@ -132,7 +134,6 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
     );
   }
 
-  // Widget para la tarjeta de información principal
   Widget _buildInfoCard(BuildContext context) {
     return Card(
       elevation: 2,
@@ -165,7 +166,6 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
     );
   }
 
-  // Widget para la tarjeta de recomendaciones
   Widget _buildRecommendationsCard(BuildContext context) {
     return Card(
       elevation: 2,
@@ -195,7 +195,6 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
     );
   }
 
-  // Método para mostrar el diálogo de confirmación
   void _showDeleteConfirmationDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -213,8 +212,6 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
               child:
                   const Text('Eliminar', style: TextStyle(color: Colors.red)),
               onPressed: () {
-                // Llama al BLoC usando el 'context' del diálogo
-                // pero el BLoC lo lee del 'context' principal
                 context.read<DeleteAppointmentBloc>().add(
                       DeleteButtonPressed(
                           appointmentId: _currentAppointment.id),

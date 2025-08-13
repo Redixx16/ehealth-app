@@ -1,11 +1,9 @@
-// lib/presentation/screens/personnel_home_screen.dart
-
+// lib/presentation/screens/personnel/personnel_home_screen.dart
 import 'package:ehealth_app/domain/entities/appointment.dart';
 import 'package:ehealth_app/presentation/bloc/appointments/appointments_bloc.dart';
 import 'package:ehealth_app/presentation/bloc/appointments/appointments_event.dart';
 import 'package:ehealth_app/presentation/bloc/appointments/appointments_state.dart';
 import 'package:ehealth_app/presentation/bloc/login/login_bloc.dart';
-
 import 'package:ehealth_app/data/datasources/auth_remote_data_source.dart';
 import 'package:ehealth_app/presentation/screens/appointments/appointment_detail_screen.dart';
 import 'package:ehealth_app/presentation/screens/appointments/create_appointment_screen.dart';
@@ -14,29 +12,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ehealth_app/injection_container.dart'
+    as di; // <-- Importa GetIt
 
 class PersonnelHomeScreen extends StatelessWidget {
   const PersonnelHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // 1. Creamos el Provider aquí
     return BlocProvider(
-      create: (context) => AppointmentsBloc()..add(FetchAppointments()),
-      // 2. Usamos un Builder para obtener un nuevo context que está "debajo" del Provider
+      // Ahora usamos nuestro locator para crear la instancia del BLoC
+      create: (context) =>
+          di.locator<AppointmentsBloc>()..add(FetchAppointments()),
       child: Builder(builder: (context) {
         return Scaffold(
           backgroundColor: Colors.grey[100],
-          // 3. Este FloatingActionButton ahora usa el context correcto del Builder
           floatingActionButton: FloatingActionButton(
             onPressed: () async {
-              await Navigator.push(
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) => const CreateAppointmentScreen()),
               );
-              // Ahora esta línea SÍ encontrará el BLoC sin problemas
-              context.read<AppointmentsBloc>().add(FetchAppointments());
+              // Si la pantalla de creación devuelve un resultado (o simplemente al volver),
+              // refrescamos la lista de citas.
+              if (context.mounted) {
+                context.read<AppointmentsBloc>().add(FetchAppointments());
+              }
             },
             tooltip: 'Crear Nueva Cita',
             child: const Icon(Icons.add),
@@ -63,8 +65,6 @@ class PersonnelHomeScreen extends StatelessWidget {
     );
   }
 
-  // ... (El resto de los métodos _buildHeader, _buildBody y la clase _AppointmentCard se mantienen igual)
-
   Widget _buildHeader(BuildContext context) {
     return SliverAppBar(
       pinned: true,
@@ -79,12 +79,15 @@ class PersonnelHomeScreen extends StatelessWidget {
           onPressed: () async {
             final prefs = await SharedPreferences.getInstance();
             await prefs.remove('jwt_token');
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(
-                  builder: (context) => BlocProvider(
-                      create: (context) => LoginBloc(authRemoteDataSource: AuthRemoteDataSource()), child: LoginScreen())),
-              (Route<dynamic> route) => false,
-            );
+            if (context.mounted) {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                    builder: (context) => BlocProvider(
+                        create: (context) => di.locator<LoginBloc>(),
+                        child: LoginScreen())),
+                (Route<dynamic> route) => false,
+              );
+            }
           },
         )
       ],
@@ -139,14 +142,18 @@ class _AppointmentCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () async {
-        await Navigator.push(
+        final result = await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => AppointmentDetailScreen(
                 appointment: appointment, showEditButton: true),
           ),
         );
-        context.read<AppointmentsBloc>().add(FetchAppointments());
+        // Si la pantalla de detalle devolvió 'true' (porque se eliminó o editó algo)
+        // refrescamos la lista.
+        if (result == true && context.mounted) {
+          context.read<AppointmentsBloc>().add(FetchAppointments());
+        }
       },
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

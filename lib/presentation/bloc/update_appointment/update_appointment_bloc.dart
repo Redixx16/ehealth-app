@@ -7,9 +7,11 @@ import 'update_appointment_state.dart';
 
 class UpdateAppointmentBloc
     extends Bloc<UpdateAppointmentEvent, UpdateAppointmentState> {
-  final AppointmentRemoteDataSource _dataSource = AppointmentRemoteDataSource();
+  final AppointmentRemoteDataSource _dataSource;
 
-  UpdateAppointmentBloc() : super(UpdateAppointmentInitial()) {
+  UpdateAppointmentBloc({required AppointmentRemoteDataSource dataSource})
+      : _dataSource = dataSource,
+        super(UpdateAppointmentInitial()) {
     on<SaveChangesPressed>((event, emit) async {
       emit(UpdateAppointmentLoading());
       try {

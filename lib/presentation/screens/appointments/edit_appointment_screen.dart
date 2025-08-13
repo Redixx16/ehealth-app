@@ -1,9 +1,12 @@
+// lib/presentation/screens/appointments/edit_appointment_screen.dart
 import 'package:ehealth_app/domain/entities/appointment.dart';
 import 'package:ehealth_app/presentation/bloc/update_appointment/update_appointment_bloc.dart';
 import 'package:ehealth_app/presentation/bloc/update_appointment/update_appointment_event.dart';
 import 'package:ehealth_app/presentation/bloc/update_appointment/update_appointment_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ehealth_app/injection_container.dart'
+    as di; // <-- Importa GetIt
 
 class EditAppointmentScreen extends StatefulWidget {
   final Appointment appointment;
@@ -26,9 +29,16 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
   }
 
   @override
+  void dispose() {
+    _recommendationsController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => UpdateAppointmentBloc(),
+      // Ahora creamos el BLoC usando nuestro contenedor de dependencias
+      create: (context) => di.locator<UpdateAppointmentBloc>(),
       child: Scaffold(
         appBar: AppBar(title: const Text('Editar Cita')),
         body: BlocListener<UpdateAppointmentBloc, UpdateAppointmentState>(
@@ -37,7 +47,8 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Cita actualizada con éxito')),
               );
-              Navigator.of(context).pop(); // Vuelve a la pantalla de detalle
+              // Devuelve 'true' para que la pantalla anterior sepa que debe refrescar los datos
+              Navigator.of(context).pop(true);
             }
             if (state is UpdateAppointmentFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -50,7 +61,6 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // ... (DropdownButton y TextField se mantienen igual)
                 DropdownButtonFormField<String>(
                   value: _currentStatus,
                   decoration: const InputDecoration(
