@@ -1,3 +1,4 @@
+// lib/presentation/bloc/gamification/gamification_bloc.dart
 import 'package:bloc/bloc.dart';
 import 'package:ehealth_app/domain/entities/achievement.dart';
 import 'package:ehealth_app/domain/entities/user_progress.dart';
@@ -39,6 +40,10 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
     LoadAchievements event,
     Emitter<GamificationState> emit,
   ) async {
+    // ================== CORRECCIÓN CLAVE ==================
+    // Emitimos el estado de carga ANTES de la llamada a la API.
+    emit(GamificationLoading());
+    // ======================================================
     try {
       final achievements = await gamificationRepository.getAchievements();
       emit(AchievementsLoaded(achievements));
@@ -51,6 +56,8 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
     LoadPregnancyMilestones event,
     Emitter<GamificationState> emit,
   ) async {
+    // También aplicamos la misma corrección aquí para consistencia
+    emit(GamificationLoading());
     try {
       final milestones = await gamificationRepository.getPregnancyMilestones();
       emit(PregnancyMilestonesLoaded(milestones));
@@ -66,8 +73,6 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
     try {
       await gamificationRepository.incrementAppointmentAttendance();
       await gamificationRepository.checkAndAwardAchievements();
-
-      // Emitir evento para recargar progreso
       add(LoadUserProgress(userId: event.userId));
     } catch (e) {
       emit(GamificationError(e.toString()));
@@ -81,8 +86,6 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
     try {
       await gamificationRepository.addPoints(event.pointsReward);
       await gamificationRepository.checkAndAwardAchievements();
-
-      // Emitir evento para recargar progreso
       add(LoadUserProgress(userId: event.userId));
     } catch (e) {
       emit(GamificationError(e.toString()));
@@ -94,10 +97,8 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
     Emitter<GamificationState> emit,
   ) async {
     try {
-      await gamificationRepository.addPoints(10); // Puntos por check-in diario
+      await gamificationRepository.addPoints(10);
       await gamificationRepository.checkAndAwardAchievements();
-
-      // Emitir evento para recargar progreso
       add(LoadUserProgress(userId: event.userId));
     } catch (e) {
       emit(GamificationError(e.toString()));
@@ -110,8 +111,6 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
   ) async {
     try {
       await gamificationRepository.addPoints(event.pointsReward);
-
-      // Emitir evento para recargar progreso
       add(LoadUserProgress(userId: event.userId));
     } catch (e) {
       emit(GamificationError(e.toString()));

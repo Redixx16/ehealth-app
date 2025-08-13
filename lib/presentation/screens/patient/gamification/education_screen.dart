@@ -1,4 +1,12 @@
+// lib/presentation/screens/patient/gamification/education_screen.dart
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+// Paleta de colores consistente
+const Color kPrimaryColor = Color(0xFFF48FB1);
+const Color kPrimaryLightColor = Color(0xFFF8BBD0);
+const Color kBackgroundColor = Color(0xFFFFF7F8);
+const Color kTextColor = Color(0xFF424242);
 
 class EducationScreen extends StatefulWidget {
   const EducationScreen({super.key});
@@ -8,56 +16,47 @@ class EducationScreen extends StatefulWidget {
 }
 
 class _EducationScreenState extends State<EducationScreen> {
+  // Datos de ejemplo
   final List<EducationArticle> articles = [
     EducationArticle(
       id: 1,
-      title: 'Nutrición durante el embarazo',
+      title: 'Nutrición Esencial en el Embarazo',
       description:
-          'Guía completa sobre qué comer y qué evitar durante el embarazo para mantener una dieta saludable.',
+          'Guía sobre qué comer para mantener una dieta saludable para ti y tu bebé.',
       category: 'Nutrición',
       readTime: '5 min',
-      imageUrl: 'assets/images/nutrition.jpg',
+      icon: Icons.restaurant_menu_outlined,
       isBookmarked: false,
     ),
     EducationArticle(
       id: 2,
-      title: 'Ejercicios seguros para embarazadas',
+      title: 'Ejercicios Seguros y Recomendados',
       description:
-          'Rutinas de ejercicio apropiadas para cada trimestre del embarazo.',
+          'Rutinas de ejercicio apropiadas para cada trimestre de tu embarazo.',
       category: 'Ejercicio',
       readTime: '8 min',
-      imageUrl: 'assets/images/exercise.jpg',
+      icon: Icons.fitness_center_outlined,
       isBookmarked: true,
     ),
     EducationArticle(
       id: 3,
-      title: 'Preparación para el parto',
+      title: 'Preparándote para el Gran Día',
       description:
           'Todo lo que necesitas saber para prepararte física y mentalmente para el parto.',
       category: 'Parto',
       readTime: '12 min',
-      imageUrl: 'assets/images/birth.jpg',
+      // 'icon' no se provee intencionalmente para probar el fallback
       isBookmarked: false,
     ),
     EducationArticle(
       id: 4,
-      title: 'Cuidados del recién nacido',
+      title: 'Primeros Cuidados del Recién Nacido',
       description:
-          'Consejos esenciales para el cuidado de tu bebé en los primeros días.',
+          'Consejos esenciales para el cuidado de tu bebé en los primeros y preciosos días.',
       category: 'Cuidado del bebé',
       readTime: '10 min',
-      imageUrl: 'assets/images/baby.jpg',
+      icon: Icons.stroller_outlined,
       isBookmarked: false,
-    ),
-    EducationArticle(
-      id: 5,
-      title: 'Manejo del estrés en el embarazo',
-      description:
-          'Técnicas de relajación y manejo del estrés durante el embarazo.',
-      category: 'Bienestar',
-      readTime: '6 min',
-      imageUrl: 'assets/images/stress.jpg',
-      isBookmarked: true,
     ),
   ];
 
@@ -67,7 +66,6 @@ class _EducationScreenState extends State<EducationScreen> {
     'Ejercicio',
     'Parto',
     'Cuidado del bebé',
-    'Bienestar',
   ];
 
   String selectedCategory = 'Todos';
@@ -80,321 +78,238 @@ class _EducationScreenState extends State<EducationScreen> {
             .where((article) => article.category == selectedCategory)
             .toList();
 
-    return Container(
-      color: const Color(0xFFF0F2F5),
-      child: Column(
-        children: [
+    return Scaffold(
+      backgroundColor: kBackgroundColor,
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: const SizedBox(height: 16)),
           _buildHeader(),
           _buildCategoryFilter(),
-          Expanded(
-            child: _buildArticlesList(filteredArticles),
-          ),
+          _buildArticlesList(filteredArticles),
         ],
       ),
     );
   }
 
   Widget _buildHeader() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return SliverToBoxAdapter(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [kPrimaryColor, kPrimaryLightColor],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: kPrimaryColor.withOpacity(0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.25),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(Icons.school_outlined,
+                  color: Colors.white, size: 32),
             ),
-            child: const Icon(
-              Icons.school,
-              color: Colors.white,
-              size: 32,
-            ),
-          ),
-          const SizedBox(width: 16),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Aprende y Crece',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Aprende y Crece',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                Text(
-                  'Recursos educativos para tu embarazo',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 16,
+                  const SizedBox(height: 4),
+                  Text(
+                    'Recursos para tu bienestar',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 16,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildCategoryFilter() {
-    return Container(
-      height: 50,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-          final category = categories[index];
-          final isSelected = category == selectedCategory;
-
-          return Container(
-            margin: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(category),
-              selected: isSelected,
-              onSelected: (selected) {
-                setState(() {
-                  selectedCategory = category;
-                });
-              },
-              backgroundColor: Colors.white,
-              selectedColor: Theme.of(context).primaryColor,
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : Colors.black87,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+    return SliverToBoxAdapter(
+      child: Container(
+        height: 60,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: categories.length,
+          padding: const EdgeInsets.only(left: 16),
+          itemBuilder: (context, index) {
+            final category = categories[index];
+            final isSelected = category == selectedCategory;
+            return Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: FilterChip(
+                label: Text(category),
+                selected: isSelected,
+                onSelected: (selected) {
+                  setState(() {
+                    selectedCategory = category;
+                  });
+                },
+                backgroundColor: Colors.white,
+                selectedColor: kPrimaryColor,
+                checkmarkColor: Colors.white,
+                labelStyle: GoogleFonts.poppins(
+                  color: isSelected ? Colors.white : kTextColor,
+                  fontWeight: FontWeight.w600,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: BorderSide(
+                    color: isSelected ? kPrimaryColor : kPrimaryLightColor,
+                    width: 1.5,
+                  ),
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
 
   Widget _buildArticlesList(List<EducationArticle> articles) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: articles.length,
-      itemBuilder: (context, index) {
-        final article = articles[index];
-        return _buildArticleCard(article);
-      },
+    if (articles.isEmpty) {
+      return SliverFillRemaining(
+        child: Center(
+          child: Text(
+            'No hay artículos en esta categoría.',
+            style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
+          ),
+        ),
+      );
+    }
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final article = articles[index];
+            return _buildArticleCard(article);
+          },
+          childCount: articles.length,
+        ),
+      ),
     );
   }
 
   Widget _buildArticleCard(EducationArticle article) {
-    return Container(
+    return Card(
+      elevation: 2,
+      shadowColor: kPrimaryColor.withOpacity(0.1),
       margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Imagen del artículo (placeholder)
-          Container(
-            height: 150,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-              ),
-            ),
-            child: Center(
-              child: Icon(
-                Icons.image,
-                size: 50,
-                color: Colors.grey.shade400,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: _getCategoryColor(article.category)
-                            .withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        article.category,
-                        style: TextStyle(
-                          color: _getCategoryColor(article.category),
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {},
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: kPrimaryLightColor.withOpacity(0.3),
+                      shape: BoxShape.circle,
+                    ),
+                    // ================== CORRECCIÓN CLAVE ==================
+                    // Usamos un ícono por defecto si el del artículo es nulo
+                    child: Icon(article.icon ?? Icons.school_outlined,
+                        color: kPrimaryColor, size: 24),
+                    // ======================================================
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          article.title,
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: kTextColor,
+                          ),
                         ),
-                      ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      icon: Icon(
-                        article.isBookmarked
-                            ? Icons.bookmark
-                            : Icons.bookmark_border,
-                        color:
-                            article.isBookmarked ? Colors.amber : Colors.grey,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          article.isBookmarked = !article.isBookmarked;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  article.title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  article.description,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.access_time,
-                      size: 16,
-                      color: Colors.grey.shade500,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      article.readTime,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade500,
-                      ),
-                    ),
-                    const Spacer(),
-                    ElevatedButton(
-                      onPressed: () => _onArticleTap(article),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                        const SizedBox(height: 4),
+                        Text(
+                          article.category,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: kPrimaryColor,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                      child: const Text('Leer'),
+                      ],
                     ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Color _getCategoryColor(String category) {
-    switch (category) {
-      case 'Nutrición':
-        return Colors.green;
-      case 'Ejercicio':
-        return Colors.blue;
-      case 'Parto':
-        return Colors.purple;
-      case 'Cuidado del bebé':
-        return Colors.pink;
-      case 'Bienestar':
-        return Colors.orange;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  void _onArticleTap(EducationArticle article) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(article.title),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(article.description),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Icon(Icons.access_time, size: 16, color: Colors.grey.shade500),
-                const SizedBox(width: 4),
-                Text(
-                  'Tiempo de lectura: ${article.readTime}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade500,
                   ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                article.description,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: Colors.grey.shade600,
+                  height: 1.5,
                 ),
-              ],
-            ),
-          ],
+              ),
+              const Divider(height: 24),
+              Row(
+                children: [
+                  Icon(Icons.access_time,
+                      size: 16, color: Colors.grey.shade500),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Lectura de ${article.readTime}',
+                    style: GoogleFonts.poppins(
+                        fontSize: 12, color: Colors.grey.shade500),
+                  ),
+                  const Spacer(),
+                  Icon(
+                    article.isBookmarked
+                        ? Icons.bookmark
+                        : Icons.bookmark_border,
+                    color: article.isBookmarked
+                        ? kPrimaryColor
+                        : Colors.grey.shade400,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cerrar'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              // TODO: Navegar a la vista completa del artículo
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Abriendo: ${article.title}'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            },
-            child: const Text('Leer Completo'),
-          ),
-        ],
       ),
     );
   }
@@ -406,7 +321,10 @@ class EducationArticle {
   final String description;
   final String category;
   final String readTime;
-  final String imageUrl;
+  // ================== CORRECCIÓN CLAVE ==================
+  // Hacemos que el ícono sea opcional (nullable) añadiendo '?'
+  final IconData? icon;
+  // ======================================================
   bool isBookmarked;
 
   EducationArticle({
@@ -415,7 +333,7 @@ class EducationArticle {
     required this.description,
     required this.category,
     required this.readTime,
-    required this.imageUrl,
+    this.icon, // Ya no es 'required'
     required this.isBookmarked,
   });
 }

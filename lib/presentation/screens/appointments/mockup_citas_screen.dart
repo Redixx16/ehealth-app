@@ -1,322 +1,240 @@
+// lib/presentation/screens/appointments/mockup_citas_screen.dart
+import 'package:ehealth_app/domain/entities/appointment.dart';
+import 'package:ehealth_app/presentation/bloc/appointments/appointments_bloc.dart';
+import 'package:ehealth_app/presentation/bloc/appointments/appointments_event.dart';
+import 'package:ehealth_app/presentation/bloc/appointments/appointments_state.dart';
+import 'package:ehealth_app/presentation/screens/appointments/appointment_detail_screen.dart';
 import 'package:flutter/material.dart';
-// Para ImageFilter
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:ehealth_app/injection_container.dart' as di;
 
-// --- PANTALLA PRINCIPAL DE CITAS ---
+// Paleta de colores consistente
+const Color kPrimaryColor = Color(0xFFF48FB1);
+const Color kPrimaryLightColor = Color(0xFFF8BBD0);
+const Color kTextColor = Color(0xFF424242);
+
 class MockupCitasScreen extends StatelessWidget {
   const MockupCitasScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[100],
-      body: CustomScrollView(
-        slivers: [
-          _buildAppBar(),
-          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-          _buildNextAppointmentCard(),
-          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-          _buildQuickActions(),
-          const SliverToBoxAdapter(child: SizedBox(height: 30)),
-          _buildSectionHeader("Encuentra un Especialista"),
-          _buildSpecialistsList(),
-          const SliverToBoxAdapter(child: SizedBox(height: 30)),
-          _buildSectionHeader("Artículos de Salud"),
-          _buildHealthArticles(),
-          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAppBar() {
-    return SliverAppBar(
-      backgroundColor: Colors.grey[100],
-      elevation: 0,
-      pinned: true,
-      title: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Hola de nuevo,',
-            style: TextStyle(color: Colors.grey, fontSize: 14),
-          ),
-          Text(
-            'Carlos Ruiz',
-            style: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-              fontSize: 22,
-            ),
-          ),
-        ],
-      ),
-      actions: const [
-        Padding(
-          padding: EdgeInsets.only(right: 16.0),
-          child: CircleAvatar(
-            radius: 22,
-            backgroundImage:
-                NetworkImage('https://randomuser.me/api/portraits/men/32.jpg'),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNextAppointmentCard() {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: const LinearGradient(
-              colors: [Color(0xFF1E88E5), Color(0xFF0D47A1)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.blue.withOpacity(0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Próxima Cita',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
-              const SizedBox(height: 10),
-              const Row(
-                children: [
-                  CircleAvatar(
-                    radius: 25,
-                    backgroundImage: NetworkImage(
-                        'https://randomuser.me/api/portraits/women/44.jpg'),
-                  ),
-                  SizedBox(width: 15),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Dr. Ana Torres',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                      Text('Cardiología',
-                          style: TextStyle(color: Colors.white70)),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
+    return BlocProvider(
+      create: (context) =>
+          di.locator<AppointmentsBloc>()..add(FetchAppointments()),
+      child: Scaffold(
+        // Ya no necesita su propio AppBar, usa el de PatientMainScreen
+        body: BlocBuilder<AppointmentsBloc, AppointmentsState>(
+          builder: (context, state) {
+            if (state is AppointmentsInitial || state is AppointmentsLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (state is AppointmentsLoadSuccess) {
+              if (state.appointments.isEmpty) {
+                return _buildEmptyState();
+              }
+              return _buildAppointmentsList(context, state.appointments);
+            }
+            if (state is AppointmentsLoadFailure) {
+              return Center(
+                child: Text(
+                  'Error al cargar las citas: ${state.error}',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(color: Colors.red.shade700),
                 ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.calendar_today, color: Colors.white, size: 16),
-                    SizedBox(width: 8),
-                    Text('Mañana, 23 de Junio',
-                        style: TextStyle(color: Colors.white)),
-                    SizedBox(width: 15),
-                    Icon(Icons.access_time, color: Colors.white, size: 16),
-                    SizedBox(width: 8),
-                    Text('11:30 AM', style: TextStyle(color: Colors.white)),
-                  ],
-                ),
-              ),
-            ],
-          ),
+              );
+            }
+            return const Center(child: Text('Estado inesperado.'));
+          },
         ),
       ),
     );
   }
 
-  Widget _buildQuickActions() {
-    return SliverToBoxAdapter(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildActionItem(Icons.add_circle_outline, "Agendar\nCita"),
-          _buildActionItem(Icons.medical_services_outlined, "Mis\nRecetas"),
-          _buildActionItem(Icons.folder_open_outlined, "Mis\nExámenes"),
-          _buildActionItem(Icons.person_search_outlined, "Buscar\nDoctores"),
+          Icon(Icons.calendar_month_outlined,
+              size: 80, color: Colors.grey.shade300),
+          const SizedBox(height: 20),
+          Text(
+            'Aún no tienes citas',
+            style: GoogleFonts.poppins(
+                fontSize: 22, fontWeight: FontWeight.bold, color: kTextColor),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Contacta a tu centro de salud para agendar tu próximo control.',
+            textAlign: TextAlign.center,
+            style:
+                GoogleFonts.poppins(fontSize: 16, color: Colors.grey.shade600),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildActionItem(IconData icon, String label) {
-    return Column(
+  Widget _buildAppointmentsList(
+      BuildContext context, List<Appointment> appointments) {
+    // Separamos las citas futuras de las pasadas
+    final upcomingAppointments = appointments
+        .where((a) => a.appointmentDate.isAfter(DateTime.now()))
+        .toList();
+    final pastAppointments = appointments
+        .where((a) => a.appointmentDate.isBefore(DateTime.now()))
+        .toList();
+
+    return ListView(
+      padding: const EdgeInsets.all(16.0),
       children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 10)
-              ]),
-          child: Icon(icon, color: const Color(0xFF0D47A1), size: 30),
-        ),
-        const SizedBox(height: 8),
         Text(
-          label,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 12, color: Colors.black54),
+          'Tu Próxima Cita',
+          style: GoogleFonts.poppins(
+              fontSize: 22, fontWeight: FontWeight.bold, color: kTextColor),
         ),
+        const SizedBox(height: 16),
+        if (upcomingAppointments.isNotEmpty)
+          _buildNextAppointmentCard(context, upcomingAppointments.first)
+        else
+          _buildNoUpcomingCard(),
+        const SizedBox(height: 32),
+        Text(
+          'Historial de Citas',
+          style: GoogleFonts.poppins(
+              fontSize: 22, fontWeight: FontWeight.bold, color: kTextColor),
+        ),
+        const SizedBox(height: 16),
+        if (pastAppointments.isNotEmpty)
+          ...pastAppointments
+              .map((app) => _buildPastAppointmentTile(context, app))
+        else
+          Text(
+            'No tienes citas pasadas.',
+            style:
+                GoogleFonts.poppins(fontSize: 16, color: Colors.grey.shade600),
+          ),
       ],
     );
   }
 
-  Widget _buildSectionHeader(String title) {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildNextAppointmentCard(
+      BuildContext context, Appointment appointment) {
+    return Card(
+      elevation: 4,
+      shadowColor: kPrimaryColor.withOpacity(0.2),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: const LinearGradient(
+            colors: [kPrimaryColor, kPrimaryLightColor],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              'Control Prenatal',
+              style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold),
             ),
-            Text(
-              'Ver todos',
-              style: TextStyle(color: Colors.blue[700], fontSize: 14),
-            ),
+            const SizedBox(height: 16),
+            Row(children: [
+              const Icon(Icons.calendar_today_outlined,
+                  color: Colors.white70, size: 20),
+              const SizedBox(width: 10),
+              Text(
+                DateFormat('EEEE, dd \'de\' MMMM', 'es_ES')
+                    .format(appointment.appointmentDate.toLocal()),
+                style: GoogleFonts.poppins(color: Colors.white, fontSize: 16),
+              ),
+            ]),
+            const SizedBox(height: 10),
+            Row(children: [
+              const Icon(Icons.access_time_outlined,
+                  color: Colors.white70, size: 20),
+              const SizedBox(width: 10),
+              Text(
+                DateFormat('hh:mm a')
+                    .format(appointment.appointmentDate.toLocal()),
+                style: GoogleFonts.poppins(color: Colors.white, fontSize: 16),
+              ),
+            ]),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSpecialistsList() {
-    final specialists = [
-      {
-        'name': 'Dermatólogo',
-        'img': 'https://randomuser.me/api/portraits/women/2.jpg'
-      },
-      {
-        'name': 'Psicólogo',
-        'img': 'https://randomuser.me/api/portraits/men/5.jpg'
-      },
-      {
-        'name': 'Nutricionista',
-        'img': 'https://randomuser.me/api/portraits/women/8.jpg'
-      },
-      {
-        'name': 'Pediatra',
-        'img': 'https://randomuser.me/api/portraits/men/12.jpg'
-      },
-    ];
-
-    return SliverToBoxAdapter(
-      child: SizedBox(
-        height: 140,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: specialists.length,
-          padding: const EdgeInsets.only(left: 16, top: 10),
-          itemBuilder: (context, index) {
-            return Container(
-              width: 100,
-              margin: const EdgeInsets.only(right: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundImage: NetworkImage(specialists[index]['img']!),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    specialists[index]['name']!,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 13),
-                  ),
-                ],
-              ),
-            );
-          },
+  Widget _buildNoUpcomingCard() {
+    return Card(
+      elevation: 2,
+      shadowColor: Colors.grey.withOpacity(0.1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Text(
+          'No tienes citas programadas por el momento.',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey.shade700),
         ),
       ),
     );
   }
 
-  Widget _buildHealthArticles() {
-    final articles = [
-      {
-        'title': '5 Tips para un Corazón Sano',
-        'img':
-            'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1NzA4fDB8MXxzZWFyY2h8MTF8fGhlYWx0aHklMjBoZWFydHxlbnwwfHx8fDE3MTkyMTQ3MzF8MA&ixlib=rb-4.0.3&q=80&w=400'
-      },
-      {
-        'title': 'La Importancia de Dormir Bien',
-        'img':
-            'https://images.unsplash.com/photo-1530533718754-001d262892d7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1NzA4fDB8MXxzZWFyY2h8Mnx8c2xlZXB8ZW58MHx8fHwxNzE5MjE0Nzc3fDA&ixlib=rb-4.0.3&q=80&w=400'
-      },
-      {
-        'title': 'Dieta Mediterránea: Beneficios',
-        'img':
-            'https://images.unsplash.com/photo-1540420773420-2850a26b0f58?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1NzA4fDB8MXxzZWFyY2h8NHx8bWVkaXRlcnJhbmVhbiUyMGZvb2R8ZW58MHx8fHwxNzE5MjE0ODE1fDA&ixlib=rb-4.0.3&q=80&w=400'
-      },
-    ];
+  Widget _buildPastAppointmentTile(
+      BuildContext context, Appointment appointment) {
+    final statusColor = appointment.status == 'completada'
+        ? Colors.green.shade600
+        : (appointment.status == 'cancelada'
+            ? Colors.red.shade600
+            : Colors.grey.shade600);
 
-    return SliverToBoxAdapter(
-      child: SizedBox(
-        height: 150,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.only(left: 16, top: 10),
-          itemCount: articles.length,
-          itemBuilder: (context, index) {
-            return Container(
-              width: 220,
-              margin: const EdgeInsets.only(right: 15),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                image: DecorationImage(
-                  image: NetworkImage(articles[index]['img']!),
-                  fit: BoxFit.cover,
-                  colorFilter: ColorFilter.mode(
-                      Colors.black.withOpacity(0.4), BlendMode.darken),
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Align(
-                  alignment: Alignment.bottomLeft,
-                  child: Text(
-                    articles[index]['title']!,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 1,
+      shadowColor: Colors.black.withOpacity(0.05),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: ListTile(
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: kPrimaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child:
+              const Icon(Icons.calendar_month_outlined, color: kPrimaryColor),
         ),
+        title: Text(
+          DateFormat('dd \'de\' MMMM, yyyy', 'es_ES')
+              .format(appointment.appointmentDate.toLocal()),
+          style: GoogleFonts.poppins(
+              fontWeight: FontWeight.bold, color: kTextColor),
+        ),
+        subtitle: Text(
+          'Estado: ${appointment.status}',
+          style: GoogleFonts.poppins(
+              color: statusColor, fontWeight: FontWeight.w500),
+        ),
+        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => AppointmentDetailScreen(appointment: appointment),
+            ),
+          );
+        },
       ),
     );
   }

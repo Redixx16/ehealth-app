@@ -4,16 +4,15 @@ import 'package:ehealth_app/presentation/bloc/appointments/appointments_bloc.dar
 import 'package:ehealth_app/presentation/bloc/appointments/appointments_event.dart';
 import 'package:ehealth_app/presentation/bloc/appointments/appointments_state.dart';
 import 'package:ehealth_app/presentation/bloc/login/login_bloc.dart';
-import 'package:ehealth_app/data/datasources/auth_remote_data_source.dart';
 import 'package:ehealth_app/presentation/screens/appointments/appointment_detail_screen.dart';
 import 'package:ehealth_app/presentation/screens/appointments/create_appointment_screen.dart';
 import 'package:ehealth_app/presentation/screens/auth/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ehealth_app/injection_container.dart'
-    as di; // <-- Importa GetIt
+import 'package:ehealth_app/injection_container.dart' as di;
 
 class PersonnelHomeScreen extends StatelessWidget {
   const PersonnelHomeScreen({super.key});
@@ -21,21 +20,17 @@ class PersonnelHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      // Ahora usamos nuestro locator para crear la instancia del BLoC
       create: (context) =>
           di.locator<AppointmentsBloc>()..add(FetchAppointments()),
       child: Builder(builder: (context) {
         return Scaffold(
-          backgroundColor: Colors.grey[100],
           floatingActionButton: FloatingActionButton(
             onPressed: () async {
-              final result = await Navigator.push(
+              await Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) => const CreateAppointmentScreen()),
               );
-              // Si la pantalla de creación devuelve un resultado (o simplemente al volver),
-              // refrescamos la lista de citas.
               if (context.mounted) {
                 context.read<AppointmentsBloc>().add(FetchAppointments());
               }
@@ -68,13 +63,10 @@ class PersonnelHomeScreen extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     return SliverAppBar(
       pinned: true,
-      backgroundColor: Colors.grey[100],
-      elevation: 0,
-      title: const Text('Citas Programadas',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+      title: const Text('Citas Programadas'),
       actions: [
         IconButton(
-          icon: const Icon(Icons.logout, color: Colors.black54),
+          icon: const Icon(Icons.logout),
           tooltip: 'Cerrar Sesión',
           onPressed: () async {
             final prefs = await SharedPreferences.getInstance();
@@ -97,16 +89,17 @@ class PersonnelHomeScreen extends StatelessWidget {
   Widget _buildBody(BuildContext context, AppointmentsState state) {
     if (state is AppointmentsLoadSuccess) {
       if (state.appointments.isEmpty) {
-        return const SliverFillRemaining(
+        return SliverFillRemaining(
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.calendar_today_outlined,
-                    size: 60, color: Colors.grey),
-                SizedBox(height: 16),
+                    size: 60, color: Colors.grey.shade400),
+                const SizedBox(height: 16),
                 Text('No has programado citas.',
-                    style: TextStyle(fontSize: 16)),
+                    style: GoogleFonts.poppins(
+                        fontSize: 16, color: Colors.grey.shade600)),
               ],
             ),
           ),
@@ -137,8 +130,12 @@ class _AppointmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor =
-        appointment.status == 'completada' ? Colors.green : Colors.blue;
+    final theme = Theme.of(context);
+    final statusColor = appointment.status == 'completada'
+        ? Colors.green.shade600
+        : (appointment.status == 'cancelada'
+            ? Colors.red.shade600
+            : theme.primaryColor);
 
     return GestureDetector(
       onTap: () async {
@@ -149,8 +146,6 @@ class _AppointmentCard extends StatelessWidget {
                 appointment: appointment, showEditButton: true),
           ),
         );
-        // Si la pantalla de detalle devolvió 'true' (porque se eliminó o editó algo)
-        // refrescamos la lista.
         if (result == true && context.mounted) {
           context.read<AppointmentsBloc>().add(FetchAppointments());
         }
@@ -158,7 +153,8 @@ class _AppointmentCard extends StatelessWidget {
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shadowColor: theme.primaryColor.withOpacity(0.1),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -166,8 +162,10 @@ class _AppointmentCard extends StatelessWidget {
             children: [
               Text(
                 'Paciente: ${appointment.patient?.fullName ?? 'No asignado'}',
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.black87),
               ),
               const Divider(height: 20),
               Row(
@@ -177,7 +175,7 @@ class _AppointmentCard extends StatelessWidget {
                   Text(
                     DateFormat('dd/MM/yyyy, hh:mm a')
                         .format(appointment.appointmentDate.toLocal()),
-                    style: TextStyle(color: Colors.grey[800]),
+                    style: GoogleFonts.poppins(color: Colors.grey[800]),
                   ),
                 ],
               ),
@@ -186,7 +184,7 @@ class _AppointmentCard extends StatelessWidget {
                 children: [
                   Icon(Icons.info_outline, size: 16, color: Colors.grey[700]),
                   const SizedBox(width: 8),
-                  const Text('Estado:'),
+                  Text('Estado:', style: GoogleFonts.poppins()),
                   const SizedBox(width: 4),
                   Container(
                     padding:
@@ -197,7 +195,7 @@ class _AppointmentCard extends StatelessWidget {
                     ),
                     child: Text(
                       appointment.status.toUpperCase(),
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                           color: statusColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 12),

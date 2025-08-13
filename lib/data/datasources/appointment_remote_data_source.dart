@@ -11,34 +11,42 @@ class AppointmentRemoteDataSource {
 
   Future<void> createAppointment(
       int patientId, DateTime appointmentDate) async {
+    // ================== CORRECCIÓN CLAVE AQUÍ ==================
+    // Antes se pasaba el endpoint relativo. Ahora se pasa la URL completa.
     await _apiClient.post(
-      ApiConfig.appointmentsEndpoint,
+      ApiConfig.appointmentsUrl, // Usamos la URL completa
       body: {
         'patientId': patientId,
         'appointment_date': appointmentDate.toIso8601String(),
       },
     );
+    // ==========================================================
   }
 
   Future<void> updateAppointment(int id, UpdateAppointmentDto dto) async {
+    // Construimos la URL completa para el endpoint específico
     await _apiClient.patch(
-      '${ApiConfig.appointmentsEndpoint}/$id',
+      '${ApiConfig.appointmentsUrl}/$id',
       body: dto.toJson(),
     );
   }
 
   Future<void> deleteAppointment(int id) async {
-    await _apiClient.delete('${ApiConfig.appointmentsEndpoint}/$id');
+    await _apiClient.delete('${ApiConfig.appointmentsUrl}/$id');
   }
 
   Future<Appointment> getAppointmentById(int id) async {
-    final response =
-        await _apiClient.get('${ApiConfig.appointmentsEndpoint}/$id');
+    final response = await _apiClient.get('${ApiConfig.appointmentsUrl}/$id');
     return Appointment.fromJson(response);
   }
 
   Future<List<Appointment>> getAppointments() async {
-    final response = await _apiClient.get(ApiConfig.appointmentsEndpoint);
+    // ================== CORRECCIÓN CLAVE AQUÍ ==================
+    // Antes usaba ApiConfig.appointmentsEndpoint ('/appointments')
+    // Ahora usa ApiConfig.appointmentsUrl ('http://.../appointments')
+    final response = await _apiClient.get(ApiConfig.appointmentsUrl);
+    // ==========================================================
+
     final List<dynamic> data = response;
     return data.map((json) => Appointment.fromJson(json)).toList();
   }

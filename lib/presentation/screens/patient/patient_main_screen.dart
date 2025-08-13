@@ -1,4 +1,5 @@
 // lib/presentation/screens/patient/patient_main_screen.dart
+import 'package:ehealth_app/data/datasources/auth_remote_data_source.dart';
 import 'package:ehealth_app/presentation/bloc/login/login_bloc.dart';
 import 'package:ehealth_app/presentation/screens/auth/login_screen.dart';
 import 'package:ehealth_app/presentation/screens/patient/patient_profile_page.dart';
@@ -7,10 +8,12 @@ import 'package:ehealth_app/presentation/screens/appointments/mockup_citas_scree
 import 'package:ehealth_app/presentation/screens/patient/gamification/achievements_screen.dart';
 import 'package:ehealth_app/presentation/screens/patient/gamification/education_screen.dart';
 import 'package:ehealth_app/presentation/screens/patient/gamification/notifications_screen.dart';
+// --> NUEVO: Importamos la pantalla del Timeline
+import 'package:ehealth_app/presentation/screens/patient/gamification/pregnancy_timeline_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ehealth_app/injection_container.dart' as di; // Importamos GetIt
+import 'package:ehealth_app/injection_container.dart' as di;
 
 // Paleta de colores consistente con el resto de la app
 const Color kPrimaryColor = Color(0xFFF48FB1);
@@ -160,16 +163,11 @@ class _PatientDrawer extends StatelessWidget {
             onTap: () async {
               final prefs = await SharedPreferences.getInstance();
               await prefs.remove('jwt_token');
-
-              // CORRECCIÓN: Usamos 'mounted' para evitar errores de BuildContext asíncrono
               if (!context.mounted) return;
-
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
                     builder: (context) => BlocProvider(
-                        // CORRECCIÓN: Usamos GetIt para instanciar el BLoC
                         create: (context) => di.locator<LoginBloc>(),
-                        // CORRECCIÓN: Añadimos const al constructor
                         child: const LoginScreen())),
                 (Route<dynamic> route) => false,
               );
@@ -191,7 +189,6 @@ class _PatientDrawer extends StatelessWidget {
 class _PatientHomeTab extends StatelessWidget {
   const _PatientHomeTab();
 
-  // (El resto del código de _PatientHomeTab se mantiene igual)
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -214,14 +211,25 @@ class _PatientHomeTab extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            childAspectRatio: 1.4, // Ajustado para mejor apariencia
+            childAspectRatio: 1.4,
             children: [
+              // --> NUEVO: Tarjeta para navegar al Timeline
+              _buildQuickActionCard(
+                context,
+                'Mi Embarazo',
+                Icons.flag_outlined,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const PregnancyTimelineScreen()),
+                  );
+                },
+              ),
               _buildQuickActionCard(
                   context, 'Registrar Síntoma', Icons.sick_outlined),
               _buildQuickActionCard(
                   context, 'Presión Arterial', Icons.favorite_border),
-              _buildQuickActionCard(
-                  context, 'Mov. Fetales', Icons.child_friendly_outlined),
               _buildQuickActionCard(
                   context, 'Emergencia', Icons.local_hospital_outlined,
                   isEmergency: true),
@@ -274,7 +282,7 @@ class _PatientHomeTab extends StatelessWidget {
 
   Widget _buildQuickActionCard(
       BuildContext context, String title, IconData icon,
-      {bool isEmergency = false}) {
+      {bool isEmergency = false, VoidCallback? onTap}) {
     final color = isEmergency ? Colors.red.shade700 : kPrimaryColor;
     return Container(
       decoration: BoxDecoration(
@@ -283,7 +291,7 @@ class _PatientHomeTab extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {},
+          onTap: onTap, // <-- Usamos el callback aquí
           borderRadius: BorderRadius.circular(20),
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             Icon(icon, size: 36, color: color),

@@ -1,5 +1,4 @@
 // lib/presentation/screens/appointments/appointment_detail_screen.dart
-import 'package:ehealth_app/data/datasources/appointment_remote_data_source.dart';
 import 'package:ehealth_app/domain/entities/appointment.dart';
 import 'package:ehealth_app/presentation/bloc/delete_appointment/delete_appointment_bloc.dart';
 import 'package:ehealth_app/presentation/bloc/delete_appointment/delete_appointment_event.dart';
@@ -7,9 +6,10 @@ import 'package:ehealth_app/presentation/bloc/delete_appointment/delete_appointm
 import 'package:ehealth_app/presentation/screens/appointments/edit_appointment_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:ehealth_app/injection_container.dart'
-    as di; // <-- Importa GetIt
+import 'package:ehealth_app/injection_container.dart' as di;
+import 'package:ehealth_app/data/datasources/appointment_remote_data_source.dart';
 
 class AppointmentDetailScreen extends StatefulWidget {
   final Appointment appointment;
@@ -28,7 +28,6 @@ class AppointmentDetailScreen extends StatefulWidget {
 
 class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
   late Appointment _currentAppointment;
-  // Usamos GetIt para obtener la instancia del DataSource
   final AppointmentRemoteDataSource _dataSource =
       di.locator<AppointmentRemoteDataSource>();
 
@@ -49,23 +48,17 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
         });
       }
     } catch (e) {
-      // El print ha sido eliminado para seguir las buenas prácticas.
-      // En un futuro, aquí iría un logger: log.error("Error al refrescar la cita: $e");
+      // En un futuro, aquí iría un logger.
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      // Ahora creamos el BLoC usando nuestro contenedor de dependencias
       create: (context) => di.locator<DeleteAppointmentBloc>(),
       child: Scaffold(
-        backgroundColor: Colors.grey[100],
         appBar: AppBar(
           title: const Text('Detalle de la Cita'),
-          backgroundColor: Colors.grey[100],
-          elevation: 0,
-          foregroundColor: Colors.black87,
           actions: [
             if (widget.showEditButton)
               BlocBuilder<DeleteAppointmentBloc, DeleteAppointmentState>(
@@ -92,7 +85,8 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
         body: BlocListener<DeleteAppointmentBloc, DeleteAppointmentState>(
           listener: (context, state) {
             if (state is DeleteAppointmentSuccess) {
-              Navigator.of(context).pop(true);
+              Navigator.of(context)
+                  .pop(true); // Devuelve 'true' para indicar éxito
             }
             if (state is DeleteAppointmentFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -135,9 +129,11 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
   }
 
   Widget _buildInfoCard(BuildContext context) {
+    final theme = Theme.of(context);
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shadowColor: theme.primaryColor.withOpacity(0.1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -167,9 +163,11 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
   }
 
   Widget _buildRecommendationsCard(BuildContext context) {
+    final theme = Theme.of(context);
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shadowColor: theme.primaryColor.withOpacity(0.1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -177,17 +175,16 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
           children: [
             Text(
               'Recomendaciones Médicas',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87),
             ),
             const Divider(height: 24),
             Text(
               _currentAppointment.recommendations ??
                   'Aún no hay recomendaciones.',
-              style:
-                  Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.5),
+              style: GoogleFonts.poppins(height: 1.5, color: Colors.black54),
             ),
           ],
         ),
@@ -200,9 +197,10 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text('Confirmar Eliminación'),
-          content: const Text(
-              '¿Estás seguro de que deseas eliminar esta cita? Esta acción no se puede deshacer.'),
+          title: Text('Confirmar Eliminación', style: GoogleFonts.poppins()),
+          content: Text(
+              '¿Estás seguro de que deseas eliminar esta cita? Esta acción no se puede deshacer.',
+              style: GoogleFonts.poppins()),
           actions: <Widget>[
             TextButton(
               child: const Text('Cancelar'),
@@ -249,15 +247,15 @@ class _DetailInfoRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: TextStyle(color: Colors.grey[700])),
+              Text(title, style: GoogleFonts.poppins(color: Colors.grey[700])),
               const SizedBox(height: 4),
               subtitleWidget ??
                   Text(
                     subtitle ?? '',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
+                    style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.black87),
                   ),
             ],
           ),
@@ -274,8 +272,10 @@ class _StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = status == 'completada'
-        ? Colors.green
-        : (status == 'cancelada' ? Colors.red : Colors.blue);
+        ? Colors.green.shade600
+        : (status == 'cancelada'
+            ? Colors.red.shade600
+            : Theme.of(context).primaryColor);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -284,8 +284,8 @@ class _StatusChip extends StatelessWidget {
       ),
       child: Text(
         status.toUpperCase(),
-        style:
-            TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12),
+        style: GoogleFonts.poppins(
+            color: color, fontWeight: FontWeight.bold, fontSize: 12),
       ),
     );
   }
