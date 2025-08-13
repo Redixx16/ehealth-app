@@ -1,6 +1,12 @@
+// lib/presentation/bloc/register/register_event.dart
 part of 'register_bloc.dart';
 
-abstract class RegisterEvent {}
+abstract class RegisterEvent extends Equatable {
+  const RegisterEvent();
+
+  @override
+  List<Object> get props => [];
+}
 
 class RegisterSubmitted extends RegisterEvent {
   final String email;
@@ -8,5 +14,13 @@ class RegisterSubmitted extends RegisterEvent {
   final String role;
   final String fullName;
 
-  RegisterSubmitted({required this.email, required this.password, required this.role, required this.fullName});
-} 
+  const RegisterSubmitted({
+    required this.email,
+    required this.password,
+    required this.role,
+    required this.fullName,
+  });
+
+  @override
+  List<Object> get props => [email, password, role, fullName];
+}

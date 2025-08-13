@@ -1,7 +1,8 @@
+// lib/presentation/screens/auth/register_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart'; // Asegúrate de tener esta dependencia
-import '../../../data/datasources/auth_remote_data_source.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:ehealth_app/injection_container.dart' as di; // Importa GetIt
 import '../../bloc/register/register_bloc.dart';
 
 // Reutilizamos la paleta de colores de la pantalla de login para consistencia
@@ -42,15 +43,11 @@ class _RegisterScreenState extends State<RegisterScreen>
   void _setupAnimations() {
     _animationController = AnimationController(
       vsync: this,
-      duration:
-          const Duration(milliseconds: 1200), // Duración total de la secuencia
+      duration: const Duration(milliseconds: 1200),
     );
 
-    // Número total de elementos a animar
     const int itemCount = 5;
-    // Duración de la animación de cada elemento (ej. 50% del total)
     const double itemAnimationDuration = 0.5;
-    // Retraso entre el inicio de cada animación (ej. 15% del total)
     const double step = 0.15;
 
     _slideAnimations = List.generate(
@@ -60,16 +57,11 @@ class _RegisterScreenState extends State<RegisterScreen>
         end: Offset.zero,
       ).animate(CurvedAnimation(
         parent: _animationController,
-        // FÓRMULA CORREGIDA
-        // El último item empezará en (0.15 * 4 = 0.6)
-        // y terminará en (0.6 + 0.5 = 1.1), ¡Ups! Corrijamos eso también.
-        // Un mejor cálculo:
         curve: Interval(
-            step * index, // Inicio
+            step * index,
             (step * index) + itemAnimationDuration > 1.0
                 ? 1.0
-                : (step * index) +
-                    itemAnimationDuration, // Fin, asegurando que no pase de 1.0
+                : (step * index) + itemAnimationDuration,
             curve: Curves.easeOutCubic),
       )),
     );
@@ -81,12 +73,11 @@ class _RegisterScreenState extends State<RegisterScreen>
         end: 1.0,
       ).animate(CurvedAnimation(
         parent: _animationController,
-        // FÓRMULA CORREGIDA
         curve: Interval(
-            step * index, // Inicio
+            step * index,
             (step * index) + itemAnimationDuration > 1.0
                 ? 1.0
-                : (step * index) + itemAnimationDuration, // Fin
+                : (step * index) + itemAnimationDuration,
             curve: Curves.easeOutCubic),
       )),
     );
@@ -106,7 +97,7 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   void _onRegister(BuildContext context) {
     if (_formKey.currentState!.validate()) {
-      FocusScope.of(context).unfocus(); // Oculta el teclado
+      FocusScope.of(context).unfocus();
       BlocProvider.of<RegisterBloc>(context).add(
         RegisterSubmitted(
           email: _emailController.text.trim(),
@@ -121,7 +112,8 @@ class _RegisterScreenState extends State<RegisterScreen>
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => RegisterBloc(AuthRemoteDataSource()),
+      // CORRECCIÓN: Usamos GetIt para crear el BLoC
+      create: (_) => di.locator<RegisterBloc>(),
       child: Scaffold(
         backgroundColor: kBackgroundColor,
         body: BlocConsumer<RegisterBloc, RegisterState>(
@@ -151,7 +143,7 @@ class _RegisterScreenState extends State<RegisterScreen>
           builder: (context, state) {
             return Stack(
               children: [
-                _buildDecorativeShape(), // Elemento decorativo en el fondo
+                _buildDecorativeShape(),
                 SafeArea(
                   child: SingleChildScrollView(
                     child: Padding(
@@ -231,10 +223,12 @@ class _RegisterScreenState extends State<RegisterScreen>
                 icon: Icons.email_outlined,
               ),
               validator: (value) {
-                if (value == null || value.trim().isEmpty)
+                if (value == null || value.trim().isEmpty) {
                   return 'Ingresa tu email';
-                if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value))
+                }
+                if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value)) {
                   return 'Email inválido';
+                }
                 return null;
               },
             ),
@@ -260,8 +254,9 @@ class _RegisterScreenState extends State<RegisterScreen>
                 ),
               ),
               validator: (value) {
-                if (value == null || value.isEmpty)
+                if (value == null || value.isEmpty) {
                   return 'Ingresa tu contraseña';
+                }
                 if (value.length < 6) return 'Mínimo 6 caracteres';
                 return null;
               },
@@ -306,7 +301,6 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  // Widget helper para aplicar la animación a cada campo
   Widget _buildAnimatedFormField(
       {required int animationIndex, required Widget child}) {
     return FadeTransition(
@@ -318,7 +312,6 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  // Estilo de decoración unificado y mejorado
   InputDecoration _buildInputDecoration({
     required String hintText,
     required IconData icon,
@@ -385,7 +378,6 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  // Widget para la forma decorativa del fondo
   Widget _buildDecorativeShape() {
     return Positioned(
       bottom: -100,

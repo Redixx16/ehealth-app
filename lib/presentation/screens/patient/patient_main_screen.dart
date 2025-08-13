@@ -1,3 +1,4 @@
+// lib/presentation/screens/patient/patient_main_screen.dart
 import 'package:ehealth_app/data/datasources/auth_remote_data_source.dart';
 import 'package:ehealth_app/presentation/bloc/login/login_bloc.dart';
 import 'package:ehealth_app/presentation/screens/auth/login_screen.dart';
@@ -10,6 +11,7 @@ import 'package:ehealth_app/presentation/screens/patient/gamification/notificati
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ehealth_app/injection_container.dart' as di; // Importamos GetIt
 
 // Paleta de colores consistente con el resto de la app
 const Color kPrimaryColor = Color(0xFFF48FB1);
@@ -27,7 +29,6 @@ class PatientMainScreen extends StatefulWidget {
 class _PatientMainScreenState extends State<PatientMainScreen> {
   int _selectedIndex = 0;
 
-  // Las pantallas para cada pestaña se mantienen igual
   final List<Widget> _screens = const [
     _PatientHomeTab(),
     MockupCitasScreen(),
@@ -46,7 +47,6 @@ class _PatientMainScreenState extends State<PatientMainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kBackgroundColor,
-      // AppBar rediseñada para ser más dinámica y personal
       appBar: AppBar(
         iconTheme: const IconThemeData(color: kTextColor),
         backgroundColor: kBackgroundColor,
@@ -78,13 +78,11 @@ class _PatientMainScreenState extends State<PatientMainScreen> {
           ),
         ],
       ),
-      // El drawer ahora usará la nueva paleta de colores
       drawer: const _PatientDrawer(),
       body: IndexedStack(
         index: _selectedIndex,
         children: _screens,
       ),
-      // BottomNavigationBar rediseñado
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -117,7 +115,6 @@ class _PatientDrawer extends StatelessWidget {
   const _PatientDrawer();
   @override
   Widget build(BuildContext context) {
-    // Estos datos deberían venir del estado del usuario (ej. BLoC)
     const String fullName = 'Anaís García';
     const String email = 'anais.garcia@email.com';
 
@@ -133,7 +130,6 @@ class _PatientDrawer extends StatelessWidget {
               backgroundColor: Colors.white,
               child: Icon(Icons.person, size: 40, color: kPrimaryColor),
             ),
-            // El gradiente ahora usa los colores del tema
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [kPrimaryColor, kPrimaryLightColor],
@@ -165,12 +161,17 @@ class _PatientDrawer extends StatelessWidget {
             onTap: () async {
               final prefs = await SharedPreferences.getInstance();
               await prefs.remove('jwt_token');
+
+              // CORRECCIÓN: Usamos 'mounted' para evitar errores de BuildContext asíncrono
+              if (!context.mounted) return;
+
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
                     builder: (context) => BlocProvider(
-                        create: (context) => LoginBloc(
-                            authRemoteDataSource: AuthRemoteDataSource()),
-                        child: LoginScreen())),
+                        // CORRECCIÓN: Usamos GetIt para instanciar el BLoC
+                        create: (context) => di.locator<LoginBloc>(),
+                        // CORRECCIÓN: Añadimos const al constructor
+                        child: const LoginScreen())),
                 (Route<dynamic> route) => false,
               );
             },
@@ -191,6 +192,7 @@ class _PatientDrawer extends StatelessWidget {
 class _PatientHomeTab extends StatelessWidget {
   const _PatientHomeTab();
 
+  // (El resto del código de _PatientHomeTab se mantiene igual)
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -270,8 +272,6 @@ class _PatientHomeTab extends StatelessWidget {
       ),
     );
   }
-
-  // --- Widgets auxiliares rediseñados ---
 
   Widget _buildQuickActionCard(
       BuildContext context, String title, IconData icon,

@@ -2,6 +2,9 @@
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 
+// Core
+import 'package:ehealth_app/core/api/api_client.dart';
+
 // DataSources
 import 'package:ehealth_app/data/datasources/auth_remote_data_source.dart';
 import 'package:ehealth_app/data/datasources/patient_remote_data_source.dart';
@@ -23,12 +26,17 @@ import 'package:ehealth_app/presentation/bloc/appointments/appointments_bloc.dar
 import 'package:ehealth_app/presentation/bloc/create_appointment/create_appointment_bloc.dart';
 import 'package:ehealth_app/presentation/bloc/delete_appointment/delete_appointment_bloc.dart';
 import 'package:ehealth_app/presentation/bloc/update_appointment/update_appointment_bloc.dart';
+import 'package:ehealth_app/presentation/bloc/register/register_bloc.dart';
 
 final locator = GetIt.instance;
 
 Future<void> setupLocator() async {
-  // --- BLoCs ---
+  // --- CORE ---
+  locator.registerLazySingleton(() => ApiClient(client: locator()));
+
+  // --- BLOCS ---
   locator.registerFactory(() => LoginBloc(authRemoteDataSource: locator()));
+  locator.registerFactory(() => RegisterBloc(authRemoteDataSource: locator()));
   locator.registerFactory(() => PatientBloc(patientRepository: locator()));
   locator.registerFactory(
       () => GamificationBloc(gamificationRepository: locator()));
@@ -48,14 +56,16 @@ Future<void> setupLocator() async {
   );
 
   // --- DATA SOURCES ---
-  locator.registerLazySingleton(() => AuthRemoteDataSource());
+  locator
+      .registerLazySingleton(() => AuthRemoteDataSource(apiClient: locator()));
   locator.registerLazySingleton<PatientRemoteDataSource>(
-    () => PatientRemoteDataSourceImpl(client: locator()),
+    () => PatientRemoteDataSourceImpl(apiClient: locator()),
   );
   locator.registerLazySingleton<GamificationRemoteDataSource>(
-    () => GamificationRemoteDataSourceImpl(client: locator()),
+    () => GamificationRemoteDataSourceImpl(apiClient: locator()),
   );
-  locator.registerLazySingleton(() => AppointmentRemoteDataSource());
+  locator.registerLazySingleton(
+      () => AppointmentRemoteDataSource(apiClient: locator()));
 
   // --- EXTERNAL ---
   locator.registerLazySingleton(() => http.Client());
