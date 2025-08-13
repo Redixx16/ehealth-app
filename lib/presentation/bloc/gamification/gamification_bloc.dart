@@ -3,17 +3,35 @@ import 'package:bloc/bloc.dart';
 import 'package:ehealth_app/domain/entities/achievement.dart';
 import 'package:ehealth_app/domain/entities/user_progress.dart';
 import 'package:ehealth_app/domain/entities/pregnancy_milestone.dart';
-import 'package:ehealth_app/domain/repositories/gamification_repository.dart';
+import 'package:ehealth_app/domain/usecases/gamification/add_points.dart';
+import 'package:ehealth_app/domain/usecases/gamification/check_and_award_achievements.dart';
+import 'package:ehealth_app/domain/usecases/gamification/get_achievements.dart';
+import 'package:ehealth_app/domain/usecases/gamification/get_pregnancy_milestones.dart';
+import 'package:ehealth_app/domain/usecases/gamification/get_user_progress.dart';
+import 'package:ehealth_app/domain/usecases/gamification/increment_appointment_attendance.dart';
 import 'package:equatable/equatable.dart';
 
 part 'gamification_event.dart';
 part 'gamification_state.dart';
 
 class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
-  final GamificationRepository gamificationRepository;
+  // El BLoC ahora depende de los Casos de Uso
+  final GetUserProgressUseCase getUserProgressUseCase;
+  final GetAchievementsUseCase getAchievementsUseCase;
+  final GetPregnancyMilestonesUseCase getPregnancyMilestonesUseCase;
+  final IncrementAppointmentAttendanceUseCase
+      incrementAppointmentAttendanceUseCase;
+  final CheckAndAwardAchievementsUseCase checkAndAwardAchievementsUseCase;
+  final AddPointsUseCase addPointsUseCase;
 
-  GamificationBloc({required this.gamificationRepository})
-      : super(GamificationInitial()) {
+  GamificationBloc({
+    required this.getUserProgressUseCase,
+    required this.getAchievementsUseCase,
+    required this.getPregnancyMilestonesUseCase,
+    required this.incrementAppointmentAttendanceUseCase,
+    required this.checkAndAwardAchievementsUseCase,
+    required this.addPointsUseCase,
+  }) : super(GamificationInitial()) {
     on<LoadUserProgress>(_onLoadUserProgress);
     on<LoadAchievements>(_onLoadAchievements);
     on<LoadPregnancyMilestones>(_onLoadPregnancyMilestones);
@@ -29,7 +47,7 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
   ) async {
     emit(GamificationLoading());
     try {
-      final progress = await gamificationRepository.getUserProgress();
+      final progress = await getUserProgressUseCase.execute();
       emit(UserProgressLoaded(progress));
     } catch (e) {
       emit(GamificationError(e.toString()));
@@ -40,12 +58,9 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
     LoadAchievements event,
     Emitter<GamificationState> emit,
   ) async {
-    // ================== CORRECCIÓN CLAVE ==================
-    // Emitimos el estado de carga ANTES de la llamada a la API.
     emit(GamificationLoading());
-    // ======================================================
     try {
-      final achievements = await gamificationRepository.getAchievements();
+      final achievements = await getAchievementsUseCase.execute();
       emit(AchievementsLoaded(achievements));
     } catch (e) {
       emit(GamificationError(e.toString()));
@@ -56,10 +71,9 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
     LoadPregnancyMilestones event,
     Emitter<GamificationState> emit,
   ) async {
-    // También aplicamos la misma corrección aquí para consistencia
     emit(GamificationLoading());
     try {
-      final milestones = await gamificationRepository.getPregnancyMilestones();
+      final milestones = await getPregnancyMilestonesUseCase.execute();
       emit(PregnancyMilestonesLoaded(milestones));
     } catch (e) {
       emit(GamificationError(e.toString()));
@@ -71,8 +85,8 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
     Emitter<GamificationState> emit,
   ) async {
     try {
-      await gamificationRepository.incrementAppointmentAttendance();
-      await gamificationRepository.checkAndAwardAchievements();
+      await incrementAppointmentAttendanceUseCase.execute();
+      await checkAndAwardAchievementsUseCase.execute();
       add(LoadUserProgress(userId: event.userId));
     } catch (e) {
       emit(GamificationError(e.toString()));
@@ -84,8 +98,8 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
     Emitter<GamificationState> emit,
   ) async {
     try {
-      await gamificationRepository.addPoints(event.pointsReward);
-      await gamificationRepository.checkAndAwardAchievements();
+      await addPointsUseCase.execute(event.pointsReward);
+      await checkAndAwardAchievementsUseCase.execute();
       add(LoadUserProgress(userId: event.userId));
     } catch (e) {
       emit(GamificationError(e.toString()));
@@ -97,8 +111,8 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
     Emitter<GamificationState> emit,
   ) async {
     try {
-      await gamificationRepository.addPoints(10);
-      await gamificationRepository.checkAndAwardAchievements();
+      await addPointsUseCase.execute(10); // Puntos por check-in diario
+      await checkAndAwardAchievementsUseCase.execute();
       add(LoadUserProgress(userId: event.userId));
     } catch (e) {
       emit(GamificationError(e.toString()));
@@ -110,7 +124,7 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
     Emitter<GamificationState> emit,
   ) async {
     try {
-      await gamificationRepository.addPoints(event.pointsReward);
+      await addPointsUseCase.execute(event.pointsReward);
       add(LoadUserProgress(userId: event.userId));
     } catch (e) {
       emit(GamificationError(e.toString()));

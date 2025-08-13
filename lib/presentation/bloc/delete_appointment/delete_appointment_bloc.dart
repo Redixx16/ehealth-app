@@ -1,20 +1,19 @@
 // lib/presentation/bloc/delete_appointment/delete_appointment_bloc.dart
-import 'package:ehealth_app/data/datasources/appointment_remote_data_source.dart';
+import 'package:ehealth_app/domain/usecases/appointments/delete_appointment.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'delete_appointment_event.dart';
 import 'delete_appointment_state.dart';
 
 class DeleteAppointmentBloc
     extends Bloc<DeleteAppointmentEvent, DeleteAppointmentState> {
-  final AppointmentRemoteDataSource _dataSource;
+  final DeleteAppointmentUseCase deleteAppointmentUseCase;
 
-  DeleteAppointmentBloc({required AppointmentRemoteDataSource dataSource})
-      : _dataSource = dataSource,
-        super(DeleteAppointmentInitial()) {
+  DeleteAppointmentBloc({required this.deleteAppointmentUseCase})
+      : super(DeleteAppointmentInitial()) {
     on<DeleteButtonPressed>((event, emit) async {
       emit(DeleteAppointmentLoading());
       try {
-        await _dataSource.deleteAppointment(event.appointmentId);
+        await deleteAppointmentUseCase.execute(id: event.appointmentId);
         emit(DeleteAppointmentSuccess());
       } catch (e) {
         emit(DeleteAppointmentFailure(e.toString()));
