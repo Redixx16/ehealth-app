@@ -28,10 +28,14 @@ class GamificationRemoteDataSourceImpl implements GamificationRemoteDataSource {
 
   @override
   Future<List<AchievementModel>> getAchievements() async {
+    print("  🔷 DATASOURCE: Llamando a apiClient.get para achievements...");
     final response = await apiClient.get(ApiConfig.achievementsUrl);
+    print("  🔷 DATASOURCE: Respuesta recibida para achievements.");
     final List<dynamic> jsonList = response;
     return jsonList.map((json) => AchievementModel.fromJson(json)).toList();
   }
+
+  // ... (El resto de los métodos se mantienen igual)
 
   @override
   Future<UserProgressModel> getUserProgress() async {

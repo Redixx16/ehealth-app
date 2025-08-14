@@ -10,17 +10,32 @@ const Color kPrimaryColor = Color(0xFFF48FB1);
 const Color kPrimaryLightColor = Color(0xFFF8BBD0);
 const Color kTextColor = Color(0xFF424242);
 
-class AchievementsScreen extends StatefulWidget {
+// ================== ESTRUCTURA CORREGIDA ==================
+// Widget principal que provee el BLoC (si fuera necesario, pero ya lo hace main.dart)
+class AchievementsScreen extends StatelessWidget {
   const AchievementsScreen({super.key});
 
   @override
-  State<AchievementsScreen> createState() => _AchievementsScreenState();
+  Widget build(BuildContext context) {
+    // Este widget ahora solo se encarga de construir la vista interna.
+    return const _AchievementsView();
+  }
 }
 
-class _AchievementsScreenState extends State<AchievementsScreen> {
+// Vista interna que maneja el estado y la UI
+class _AchievementsView extends StatefulWidget {
+  const _AchievementsView();
+
+  @override
+  State<_AchievementsView> createState() => _AchievementsViewState();
+}
+// =========================================================
+
+class _AchievementsViewState extends State<_AchievementsView> {
   @override
   void initState() {
     super.initState();
+    // Siempre pedimos los logros al entrar a esta pantalla
     context.read<GamificationBloc>().add(const LoadAchievements(userId: 1));
   }
 
@@ -28,12 +43,6 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   Widget build(BuildContext context) {
     return BlocBuilder<GamificationBloc, GamificationState>(
       builder: (context, state) {
-        // ================== CORRECCIÓN CLAVE ==================
-        // Ahora, el estado inicial y el de carga muestran el mismo widget.
-        if (state is GamificationInitial || state is GamificationLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        // ======================================================
         if (state is AchievementsLoaded) {
           if (state.achievements.isEmpty) {
             return Center(
@@ -45,7 +54,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
           }
           return _buildAchievementsList(state.achievements);
         }
-        // Si el estado es de error
+
         if (state is GamificationError) {
           return Center(
             child: Text(
@@ -54,10 +63,9 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
             ),
           );
         }
-        // Estado por defecto o inesperado
-        return const Center(
-          child: Text('No se pudieron cargar los logros.'),
-        );
+
+        // Para cualquier otro estado (Initial, Loading, o uno inesperado), mostramos el spinner.
+        return const Center(child: CircularProgressIndicator());
       },
     );
   }

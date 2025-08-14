@@ -1,5 +1,6 @@
 // lib/presentation/screens/patient/patient_main_screen.dart
-import 'package:ehealth_app/data/datasources/auth_remote_data_source.dart';
+import 'package:ehealth_app/presentation/bloc/appointments/appointments_event.dart';
+import 'package:ehealth_app/presentation/bloc/gamification/gamification_bloc.dart';
 import 'package:ehealth_app/presentation/bloc/login/login_bloc.dart';
 import 'package:ehealth_app/presentation/screens/auth/login_screen.dart';
 import 'package:ehealth_app/presentation/screens/patient/patient_profile_page.dart';
@@ -8,7 +9,6 @@ import 'package:ehealth_app/presentation/screens/appointments/mockup_citas_scree
 import 'package:ehealth_app/presentation/screens/patient/gamification/achievements_screen.dart';
 import 'package:ehealth_app/presentation/screens/patient/gamification/education_screen.dart';
 import 'package:ehealth_app/presentation/screens/patient/gamification/notifications_screen.dart';
-// --> NUEVO: Importamos la pantalla del Timeline
 import 'package:ehealth_app/presentation/screens/patient/gamification/pregnancy_timeline_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -31,6 +31,7 @@ class PatientMainScreen extends StatefulWidget {
 class _PatientMainScreenState extends State<PatientMainScreen> {
   int _selectedIndex = 0;
 
+  // Las pantallas para cada pestaña se mantienen igual
   final List<Widget> _screens = const [
     _PatientHomeTab(),
     MockupCitasScreen(),
@@ -39,11 +40,41 @@ class _PatientMainScreenState extends State<PatientMainScreen> {
     NotificationsScreen(),
   ];
 
+  // ================== CORRECCIÓN CLAVE ==================
   void _onItemTapped(int index) {
+    // Si el usuario toca la misma pestaña, no hacemos nada
+    if (_selectedIndex == index) return;
+
+    // Actualizamos el índice para cambiar la pantalla visualmente
     setState(() {
       _selectedIndex = index;
     });
+
+    // Despachamos el evento correspondiente a la pestaña seleccionada
+    // para asegurar que los datos siempre estén actualizados.
+    switch (index) {
+      case 0:
+        // La pestaña de Inicio usualmente no necesita recargar datos
+        // a menos que tengas algo específico que actualizar.
+        break;
+      case 1:
+        // Si la pantalla de Citas usara un BLoC, lo llamaríamos aquí.
+        // context.read<AppointmentsBloc>().add(FetchPatientAppointments());
+        break;
+      case 2:
+        // Cuando el usuario va a "Logros", pedimos los logros.
+        context.read<GamificationBloc>().add(const LoadAchievements(userId: 1));
+        break;
+      case 3:
+        // La pantalla de Educación es estática por ahora, no necesita BLoC.
+        break;
+      case 4:
+        // Si la pantalla de Alertas usara un BLoC, lo llamaríamos aquí.
+        // context.read<NotificationBloc>().add(FetchNotifications());
+        break;
+    }
   }
+  // =========================================================
 
   @override
   Widget build(BuildContext context) {
@@ -54,9 +85,7 @@ class _PatientMainScreenState extends State<PatientMainScreen> {
         backgroundColor: kBackgroundColor,
         elevation: 0,
         title: Text(
-          _selectedIndex == 0
-              ? '¡Hola, Anaís!'
-              : _screens[_selectedIndex].toStringShort(),
+          _getAppBarTitle(_selectedIndex),
           style: GoogleFonts.poppins(
             color: kTextColor,
             fontWeight: FontWeight.bold,
@@ -111,7 +140,26 @@ class _PatientMainScreenState extends State<PatientMainScreen> {
       ),
     );
   }
+
+  String _getAppBarTitle(int index) {
+    switch (index) {
+      case 0:
+        return '¡Hola, Anaís!';
+      case 1:
+        return 'Mis Citas';
+      case 2:
+        return 'Mis Logros';
+      case 3:
+        return 'Educación';
+      case 4:
+        return 'Alertas';
+      default:
+        return 'eHealth Prenatal';
+    }
+  }
 }
+
+// ... (El resto del archivo, _PatientDrawer y _PatientHomeTab, se mantiene exactamente igual)
 
 class _PatientDrawer extends StatelessWidget {
   const _PatientDrawer();
@@ -213,7 +261,6 @@ class _PatientHomeTab extends StatelessWidget {
             mainAxisSpacing: 16,
             childAspectRatio: 1.4,
             children: [
-              // --> NUEVO: Tarjeta para navegar al Timeline
               _buildQuickActionCard(
                 context,
                 'Mi Embarazo',
@@ -291,7 +338,7 @@ class _PatientHomeTab extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onTap, // <-- Usamos el callback aquí
+          onTap: onTap,
           borderRadius: BorderRadius.circular(20),
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             Icon(icon, size: 36, color: color),

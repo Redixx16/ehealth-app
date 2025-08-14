@@ -1,8 +1,8 @@
 // lib/core/api/api_client.dart
 import 'dart:convert';
-import 'dart:async'; // Importado para TimeoutException
+import 'dart:async';
 import 'dart:io';
-import 'package:http/http.dart' as http; // <-- CORRECCIÓN AQUÍ
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ehealth_app/core/config/api_config.dart';
 import 'package:ehealth_app/core/error/exceptions.dart';
@@ -20,23 +20,33 @@ class ApiClient {
     };
   }
 
-  Future<dynamic> get(String endpoint) async {
-    final uri = Uri.parse(endpoint);
+  Future<dynamic> get(String url) async {
+    final uri = Uri.parse(url);
     try {
+      print("    🔷 API_CLIENT: Intentando GET a $url");
       final response = await client
           .get(uri, headers: await _getHeaders())
           .timeout(ApiConfig.connectionTimeout);
+      print(
+          "    🔷 API_CLIENT: Respuesta recibida de $url con código ${response.statusCode}");
       return _handleResponse(response);
     } on SocketException {
+      print("    ❌ API_CLIENT: Error de SocketException en $url");
       throw NetworkException();
     } on http.ClientException {
+      print("    ❌ API_CLIENT: Error de ClientException en $url");
       throw NetworkException();
     } on TimeoutException {
+      print("    ❌ API_CLIENT: Error de TimeoutException en $url");
       throw TimeoutException();
     } on FormatException {
+      print(
+          "    ❌ API_CLIENT: Error de FormatException (respuesta inválida) en $url");
       throw ServerException(message: 'Respuesta inválida del servidor.');
     }
   }
+
+  // ... (El resto de los métodos post, patch, delete se mantienen igual)
 
   Future<dynamic> post(String endpoint, {dynamic body}) async {
     final uri = Uri.parse(endpoint);
@@ -101,10 +111,9 @@ class ApiClient {
   }
 
   dynamic _handleResponse(http.Response response) {
-    // Si la respuesta no tiene cuerpo (ej. en un DELETE exitoso), no intentes decodificar.
     if (response.body.isEmpty) {
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        return null; // O un `{'success': true}` si lo prefieres
+        return null;
       }
     }
 

@@ -15,7 +15,6 @@ part 'gamification_event.dart';
 part 'gamification_state.dart';
 
 class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
-  // El BLoC ahora depende de los Casos de Uso
   final GetUserProgressUseCase getUserProgressUseCase;
   final GetAchievementsUseCase getAchievementsUseCase;
   final GetPregnancyMilestonesUseCase getPregnancyMilestonesUseCase;
@@ -41,6 +40,26 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
     on<UnlockAchievement>(_onUnlockAchievement);
   }
 
+  Future<void> _onLoadAchievements(
+    LoadAchievements event,
+    Emitter<GamificationState> emit,
+  ) async {
+    print("🔷 GAMIFICATION_BLOC: Recibido evento LoadAchievements.");
+    emit(GamificationLoading());
+    try {
+      print("🔷 GAMIFICATION_BLOC: Llamando a getAchievementsUseCase...");
+      final achievements = await getAchievementsUseCase.execute();
+      print(
+          "🔷 GAMIFICATION_BLOC: getAchievementsUseCase completado. Logros: ${achievements.length}");
+      emit(AchievementsLoaded(achievements));
+    } catch (e) {
+      print("❌ GAMIFICATION_BLOC: Error al cargar logros: $e");
+      emit(GamificationError(e.toString()));
+    }
+  }
+
+  // ... (El resto de los métodos se mantienen igual)
+
   Future<void> _onLoadUserProgress(
     LoadUserProgress event,
     Emitter<GamificationState> emit,
@@ -49,19 +68,6 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
     try {
       final progress = await getUserProgressUseCase.execute();
       emit(UserProgressLoaded(progress));
-    } catch (e) {
-      emit(GamificationError(e.toString()));
-    }
-  }
-
-  Future<void> _onLoadAchievements(
-    LoadAchievements event,
-    Emitter<GamificationState> emit,
-  ) async {
-    emit(GamificationLoading());
-    try {
-      final achievements = await getAchievementsUseCase.execute();
-      emit(AchievementsLoaded(achievements));
     } catch (e) {
       emit(GamificationError(e.toString()));
     }
@@ -111,7 +117,7 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
     Emitter<GamificationState> emit,
   ) async {
     try {
-      await addPointsUseCase.execute(10); // Puntos por check-in diario
+      await addPointsUseCase.execute(10);
       await checkAndAwardAchievementsUseCase.execute();
       add(LoadUserProgress(userId: event.userId));
     } catch (e) {

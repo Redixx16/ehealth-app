@@ -47,6 +47,12 @@ import 'package:ehealth_app/presentation/bloc/register/register_bloc.dart';
 final locator = GetIt.instance;
 
 Future<void> setupLocator() async {
+  // ================== CORRECCIÓN CLAVE ==================
+  // --- CORE ---
+  // Registramos el ApiClient para que pueda ser inyectado en los DataSources.
+  locator.registerLazySingleton(() => ApiClient(client: locator()));
+  // ======================================================
+
   // --- USE CASES ---
   // Patient
   locator.registerLazySingleton(() => GetPatientUseCase(locator()));
