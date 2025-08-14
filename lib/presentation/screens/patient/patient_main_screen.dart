@@ -1,5 +1,4 @@
 // lib/presentation/screens/patient/patient_main_screen.dart
-import 'package:ehealth_app/presentation/bloc/appointments/appointments_event.dart';
 import 'package:ehealth_app/presentation/bloc/gamification/gamification_bloc.dart';
 import 'package:ehealth_app/presentation/bloc/login/login_bloc.dart';
 import 'package:ehealth_app/presentation/screens/auth/login_screen.dart';

@@ -62,7 +62,7 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 DropdownButtonFormField<String>(
-                  value: _currentStatus,
+                  initialValue: _currentStatus,
                   decoration: const InputDecoration(
                       labelText: 'Estado de la Cita',
                       border: OutlineInputBorder()),

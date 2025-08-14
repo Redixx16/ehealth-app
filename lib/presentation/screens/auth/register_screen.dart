@@ -280,7 +280,7 @@ class _RegisterScreenState extends State<RegisterScreen>
           _buildAnimatedFormField(
             animationIndex: 4,
             child: DropdownButtonFormField<String>(
-              value: _role,
+              initialValue: _role,
               decoration: _buildInputDecoration(
                 hintText: 'Soy...',
                 icon: Icons.people_outline,

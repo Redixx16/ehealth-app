@@ -75,8 +75,8 @@ class _PregnancyTimelineScreenState extends State<PregnancyTimelineScreen> {
 
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(
-            child: const SizedBox(height: 16)), // Espacio superior
+        const SliverToBoxAdapter(
+            child: SizedBox(height: 16)), // Espacio superior
         _buildHeader(milestones),
         _buildTimelineContent(milestones),
         const SliverToBoxAdapter(child: SizedBox(height: 20)),

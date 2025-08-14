@@ -25,7 +25,7 @@ final appTheme = ThemeData(
   colorScheme: const ColorScheme.light(
     primary: kPrimaryColor,
     secondary: kPrimaryLightColor,
-    background: kBackgroundColor,
+    surface: kBackgroundColor,
   ),
   appBarTheme: AppBarTheme(
     backgroundColor: kBackgroundColor,
@@ -101,7 +101,7 @@ class MyApp extends StatelessWidget {
         title: 'eHealth Prenatal',
         debugShowCheckedModeBanner: false,
         theme: appTheme, // <-- Aplicamos nuestro tema unificado
-        home: LoginScreen(),
+        home: const LoginScreen(),
       ),
     );
   }

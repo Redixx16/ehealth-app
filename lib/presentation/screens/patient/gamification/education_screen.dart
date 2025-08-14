@@ -82,7 +82,7 @@ class _EducationScreenState extends State<EducationScreen> {
       backgroundColor: kBackgroundColor,
       body: CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(child: const SizedBox(height: 16)),
+          const SliverToBoxAdapter(child: SizedBox(height: 16)),
           _buildHeader(),
           _buildCategoryFilter(),
           _buildArticlesList(filteredArticles),

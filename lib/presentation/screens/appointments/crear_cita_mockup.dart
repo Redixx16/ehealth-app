@@ -81,7 +81,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
             _buildSectionTitle("Información del Paciente"),
             // --- CAMPO DESPLEGABLE: SELECCIONAR PACIENTE ---
             DropdownButtonFormField<String>(
-              value: _selectedPatient,
+              initialValue: _selectedPatient,
               onChanged: (String? newValue) {
                 setState(() {
                   _selectedPatient = newValue;
