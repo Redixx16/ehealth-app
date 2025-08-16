@@ -1,4 +1,5 @@
 // lib/presentation/screens/patient/patient_main_screen.dart
+import 'package:ehealth_app/presentation/bloc/appointments/appointments_event.dart';
 import 'package:ehealth_app/presentation/bloc/gamification/gamification_bloc.dart';
 import 'package:ehealth_app/presentation/bloc/login/login_bloc.dart';
 import 'package:ehealth_app/presentation/screens/auth/login_screen.dart';
@@ -9,6 +10,8 @@ import 'package:ehealth_app/presentation/screens/patient/gamification/achievemen
 import 'package:ehealth_app/presentation/screens/patient/gamification/education_screen.dart';
 import 'package:ehealth_app/presentation/screens/patient/gamification/notifications_screen.dart';
 import 'package:ehealth_app/presentation/screens/patient/gamification/pregnancy_timeline_screen.dart';
+// --> NUEVO: Importamos la pantalla de Estadísticas
+import 'package:ehealth_app/presentation/screens/patient/gamification/progress_stats_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,7 +33,6 @@ class PatientMainScreen extends StatefulWidget {
 class _PatientMainScreenState extends State<PatientMainScreen> {
   int _selectedIndex = 0;
 
-  // Las pantallas para cada pestaña se mantienen igual
   final List<Widget> _screens = const [
     _PatientHomeTab(),
     MockupCitasScreen(),
@@ -39,41 +41,27 @@ class _PatientMainScreenState extends State<PatientMainScreen> {
     NotificationsScreen(),
   ];
 
-  // ================== CORRECCIÓN CLAVE ==================
   void _onItemTapped(int index) {
-    // Si el usuario toca la misma pestaña, no hacemos nada
     if (_selectedIndex == index) return;
 
-    // Actualizamos el índice para cambiar la pantalla visualmente
     setState(() {
       _selectedIndex = index;
     });
 
-    // Despachamos el evento correspondiente a la pestaña seleccionada
-    // para asegurar que los datos siempre estén actualizados.
     switch (index) {
       case 0:
-        // La pestaña de Inicio usualmente no necesita recargar datos
-        // a menos que tengas algo específico que actualizar.
         break;
       case 1:
-        // Si la pantalla de Citas usara un BLoC, lo llamaríamos aquí.
-        // context.read<AppointmentsBloc>().add(FetchPatientAppointments());
         break;
       case 2:
-        // Cuando el usuario va a "Logros", pedimos los logros.
         context.read<GamificationBloc>().add(const LoadAchievements(userId: 1));
         break;
       case 3:
-        // La pantalla de Educación es estática por ahora, no necesita BLoC.
         break;
       case 4:
-        // Si la pantalla de Alertas usara un BLoC, lo llamaríamos aquí.
-        // context.read<NotificationBloc>().add(FetchNotifications());
         break;
     }
   }
-  // =========================================================
 
   @override
   Widget build(BuildContext context) {
@@ -157,8 +145,6 @@ class _PatientMainScreenState extends State<PatientMainScreen> {
     }
   }
 }
-
-// ... (El resto del archivo, _PatientDrawer y _PatientHomeTab, se mantiene exactamente igual)
 
 class _PatientDrawer extends StatelessWidget {
   const _PatientDrawer();
@@ -272,8 +258,19 @@ class _PatientHomeTab extends StatelessWidget {
                   );
                 },
               ),
+              // --> NUEVO: Tarjeta para navegar a Estadísticas
               _buildQuickActionCard(
-                  context, 'Registrar Síntoma', Icons.sick_outlined),
+                context,
+                'Mi Progreso',
+                Icons.analytics_outlined,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ProgressStatsScreen()),
+                  );
+                },
+              ),
               _buildQuickActionCard(
                   context, 'Presión Arterial', Icons.favorite_border),
               _buildQuickActionCard(

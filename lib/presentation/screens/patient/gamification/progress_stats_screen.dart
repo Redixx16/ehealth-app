@@ -1,7 +1,15 @@
+// lib/presentation/screens/patient/gamification/progress_stats_screen.dart
 import 'package:ehealth_app/domain/entities/user_progress.dart';
 import 'package:ehealth_app/presentation/bloc/gamification/gamification_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+// Paleta de colores consistente
+const Color kPrimaryColor = Color(0xFFF48FB1);
+const Color kPrimaryLightColor = Color(0xFFF8BBD0);
+const Color kBackgroundColor = Color(0xFFFFF7F8);
+const Color kTextColor = Color(0xFF424242);
 
 class ProgressStatsScreen extends StatefulWidget {
   const ProgressStatsScreen({super.key});
@@ -14,163 +22,133 @@ class _ProgressStatsScreenState extends State<ProgressStatsScreen> {
   @override
   void initState() {
     super.initState();
+    // Cargamos todos los datos necesarios para esta pantalla
     context.read<GamificationBloc>().add(const LoadUserProgress(userId: 1));
-    context.read<GamificationBloc>().add(const LoadAchievements(userId: 1));
-    context
-        .read<GamificationBloc>()
-        .add(const LoadPregnancyMilestones(patientId: 1));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F5),
+      backgroundColor: kBackgroundColor,
       appBar: AppBar(
-        title: const Text(
-          'Estadísticas y Progreso',
-          style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: const Color(0xFFF0F2F5),
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black87),
+        title: const Text('Tu Progreso'),
       ),
       body: BlocBuilder<GamificationBloc, GamificationState>(
         builder: (context, state) {
           if (state is UserProgressLoaded) {
             return _buildStatsContent(state.progress);
-          } else if (state is GamificationLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else {
-            return const Center(
-              child: Text('No se pudieron cargar las estadísticas'),
-            );
           }
+          if (state is GamificationError) {
+            return Center(child: Text('Error: ${state.message}'));
+          }
+          // Muestra un indicador de carga para el estado inicial y de carga
+          return const Center(child: CircularProgressIndicator());
         },
       ),
     );
   }
 
   Widget _buildStatsContent(UserProgress progress) {
-    return CustomScrollView(
-      slivers: [
+    return ListView(
+      padding: const EdgeInsets.all(16.0),
+      children: [
         _buildProgressOverview(progress),
+        const SizedBox(height: 16),
         _buildLevelProgress(progress),
-        _buildWeeklyStats(),
-        _buildAchievementStats(),
-        _buildMilestoneStats(),
-        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+        const SizedBox(height: 16),
+        _buildDetailedStats(progress),
+        const SizedBox(height: 20),
       ],
     );
   }
 
   Widget _buildProgressOverview(UserProgress progress) {
-    return SliverToBoxAdapter(
-      child: Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [kPrimaryColor, kPrimaryLightColor],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: kPrimaryColor.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.analytics,
-                    color: Colors.white,
-                    size: 32,
-                  ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.25),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Resumen de Progreso',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                child: const Icon(Icons.analytics_outlined,
+                    color: Colors.white, size: 32),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Resumen General',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
-                      Text(
-                        'Nivel ${progress.level} - ${progress.totalPoints} puntos',
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 16,
-                        ),
+                    ),
+                    Text(
+                      'Nivel ${progress.level}',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 16,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildStatCard(
-                    'Puntos Totales',
-                    '${progress.totalPoints}',
-                    Icons.star,
-                    Colors.amber,
-                  ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  'Puntos Totales',
+                  '${progress.totalPoints}',
+                  Icons.star_border_outlined,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildStatCard(
-                    'Experiencia',
-                    '${progress.experiencePoints}',
-                    Icons.trending_up,
-                    Colors.green,
-                  ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatCard(
+                  'Racha Actual',
+                  '${progress.currentStreak} días',
+                  Icons.local_fire_department_outlined,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildStatCard(
-                    'Siguiente Nivel',
-                    '${progress.pointsToNextLevel}',
-                    Icons.arrow_upward,
-                    Colors.blue,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildStatCard(
-      String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(String title, String value, IconData icon) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         children: [
@@ -178,7 +156,7 @@ class _ProgressStatsScreenState extends State<ProgressStatsScreen> {
           const SizedBox(height: 8),
           Text(
             value,
-            style: const TextStyle(
+            style: GoogleFonts.poppins(
               color: Colors.white,
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -186,10 +164,7 @@ class _ProgressStatsScreenState extends State<ProgressStatsScreen> {
           ),
           Text(
             title,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 12,
-            ),
+            style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12),
             textAlign: TextAlign.center,
           ),
         ],
@@ -200,36 +175,19 @@ class _ProgressStatsScreenState extends State<ProgressStatsScreen> {
   Widget _buildLevelProgress(UserProgress progress) {
     final progressPercentage = (progress.experiencePoints % 100) / 100;
 
-    return SliverToBoxAdapter(
-      child: Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+    return Card(
+      elevation: 2,
+      shadowColor: kPrimaryColor.withOpacity(0.1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(Icons.trending_up, color: Theme.of(context).primaryColor),
-                const SizedBox(width: 8),
-                const Text(
-                  'Progreso del Nivel',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+            Text(
+              'Progreso al Siguiente Nivel',
+              style: GoogleFonts.poppins(
+                  fontSize: 18, fontWeight: FontWeight.bold, color: kTextColor),
             ),
             const SizedBox(height: 16),
             Row(
@@ -240,38 +198,36 @@ class _ProgressStatsScreenState extends State<ProgressStatsScreen> {
                     children: [
                       Text(
                         'Nivel ${progress.level}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: GoogleFonts.poppins(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        '${progress.experiencePoints % 100}/100 XP',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                        ),
+                        '${progress.experiencePoints % 100} / 100 XP',
+                        style: GoogleFonts.poppins(
+                            fontSize: 14, color: Colors.grey.shade600),
                       ),
                     ],
                   ),
                 ),
                 Text(
                   '${(progressPercentage * 100).toInt()}%',
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).primaryColor,
+                    color: kPrimaryColor,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            LinearProgressIndicator(
-              value: progressPercentage,
-              backgroundColor: Colors.grey.shade200,
-              valueColor:
-                  AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
-              minHeight: 8,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: LinearProgressIndicator(
+                value: progressPercentage,
+                backgroundColor: kPrimaryLightColor.withOpacity(0.3),
+                valueColor: const AlwaysStoppedAnimation<Color>(kPrimaryColor),
+                minHeight: 10,
+              ),
             ),
           ],
         ),
@@ -279,262 +235,61 @@ class _ProgressStatsScreenState extends State<ProgressStatsScreen> {
     );
   }
 
-  Widget _buildWeeklyStats() {
-    return SliverToBoxAdapter(
-      child: Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+  Widget _buildDetailedStats(UserProgress progress) {
+    return Card(
+      elevation: 2,
+      shadowColor: kPrimaryColor.withOpacity(0.1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(Icons.calendar_today,
-                    color: Theme.of(context).primaryColor),
-                const SizedBox(width: 8),
-                const Text(
-                  'Actividad Semanal',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+            Text(
+              'Detalles de Actividad',
+              style: GoogleFonts.poppins(
+                  fontSize: 18, fontWeight: FontWeight.bold, color: kTextColor),
             ),
+            const Divider(height: 24),
+            _buildDetailRow(
+                'Citas Asistidas',
+                '${progress.appointmentsAttended}',
+                Icons.calendar_month_outlined,
+                Colors.blue.shade300),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildWeeklyDay('Lun', 15, true),
-                _buildWeeklyDay('Mar', 20, true),
-                _buildWeeklyDay('Mié', 10, true),
-                _buildWeeklyDay('Jue', 25, true),
-                _buildWeeklyDay('Vie', 30, true),
-                _buildWeeklyDay('Sáb', 5, false),
-                _buildWeeklyDay('Dom', 0, false),
-              ],
-            ),
+            _buildDetailRow(
+                'Controles de Salud',
+                '${progress.healthCheckupsCompleted}',
+                Icons.monitor_heart_outlined,
+                Colors.green.shade300),
+            const SizedBox(height: 16),
+            _buildDetailRow(
+                'Módulos Educativos',
+                '${progress.educationModulesCompleted}',
+                Icons.school_outlined,
+                Colors.purple.shade300),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildWeeklyDay(String day, int points, bool completed) {
-    return Column(
+  Widget _buildDetailRow(
+      String label, String value, IconData icon, Color color) {
+    return Row(
       children: [
-        Text(
-          day,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          width: 30,
-          height: 30,
-          decoration: BoxDecoration(
-            color: completed ? Colors.green : Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: completed
-              ? const Icon(
-                  Icons.check,
-                  color: Colors.white,
-                  size: 16,
-                )
-              : null,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '$points',
-          style: TextStyle(
-            fontSize: 10,
-            color: completed ? Colors.green : Colors.grey.shade500,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAchievementStats() {
-    return SliverToBoxAdapter(
-      child: Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              children: [
-                Icon(Icons.emoji_events, color: Colors.amber),
-                SizedBox(width: 8),
-                Text(
-                  'Logros',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child:
-                      _buildAchievementStat('Completados', '8', Colors.green),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child:
-                      _buildAchievementStat('Pendientes', '12', Colors.orange),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildAchievementStat('Total', '20', Colors.blue),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAchievementStat(String label, String value, Color color) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
+        Icon(icon, color: color, size: 24),
+        const SizedBox(width: 16),
+        Expanded(
           child: Text(
-            value,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+            label,
+            style: GoogleFonts.poppins(fontSize: 15, color: kTextColor),
           ),
         ),
-        const SizedBox(height: 8),
         Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMilestoneStats() {
-    return SliverToBoxAdapter(
-      child: Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              children: [
-                Icon(Icons.flag, color: Colors.blue),
-                SizedBox(width: 8),
-                Text(
-                  'Hitos del Embarazo',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildMilestoneStat('Completados', '15', Colors.green),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildMilestoneStat('En Progreso', '5', Colors.orange),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildMilestoneStat('Pendientes', '20', Colors.grey),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMilestoneStat(String label, String value, Color color) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            value,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
+          value,
+          style: GoogleFonts.poppins(
+              fontSize: 16, fontWeight: FontWeight.bold, color: kTextColor),
         ),
       ],
     );
