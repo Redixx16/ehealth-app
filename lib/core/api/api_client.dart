@@ -75,10 +75,7 @@ class ApiClient {
           .patch(
             uri,
             headers: await _getHeaders(),
-            // ================== CORRECCIÓN CLAVE AQUÍ ==================
-            // Solo codifica el cuerpo si no es nulo.
             body: body != null ? json.encode(body) : null,
-            // ==========================================================
           )
           .timeout(ApiConfig.connectionTimeout);
       return _handleResponse(response);

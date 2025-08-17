@@ -1,8 +1,8 @@
 // lib/main.dart
+import 'package:ehealth_app/presentation/bloc/appointments/appointments_bloc.dart';
 import 'package:ehealth_app/presentation/bloc/gamification/gamification_bloc.dart';
 import 'package:ehealth_app/presentation/bloc/patient/patient_bloc.dart';
 import 'package:ehealth_app/presentation/bloc/login/login_bloc.dart';
-// --- 1. IMPORTA EL BLOC DE NOTIFICACIONES ---
 import 'package:ehealth_app/presentation/bloc/notifications/notification_bloc.dart';
 import 'package:ehealth_app/presentation/screens/auth/login_screen.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +12,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:ehealth_app/core/config/environment_config.dart';
 import 'injection_container.dart' as di;
 
-// --- (El resto del código de la paleta de colores y tema no cambia) ---
+// --- PALETA DE COLORES Y TEMA CENTRALIZADO ---
+
 const Color kPrimaryColor = Color(0xFFF48FB1);
 const Color kPrimaryLightColor = Color(0xFFF8BBD0);
 const Color kBackgroundColor = Color(0xFFFFF7F8);
@@ -72,7 +73,7 @@ final appTheme = ThemeData(
   ),
 );
 
-// --- (La función main no cambia) ---
+// --- FUNCIÓN PRINCIPAL ASÍNCRONA ---
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('es_ES', null);
@@ -97,8 +98,10 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => di.locator<LoginBloc>()),
         BlocProvider(create: (context) => di.locator<PatientBloc>()),
         BlocProvider(create: (context) => di.locator<GamificationBloc>()),
-        // --- 2. AÑADE EL PROVIDER PARA NOTIFICATIONBLOC AQUÍ ---
         BlocProvider(create: (context) => di.locator<NotificationBloc>()),
+        BlocProvider(
+            create: (context) =>
+                di.locator<AppointmentsBloc>()), // <-- ¡Este también faltaba!
       ],
       child: MaterialApp(
         title: 'eHealth Prenatal',

@@ -1,8 +1,12 @@
 // lib/presentation/screens/patient/patient_main_screen.dart
+import 'package:ehealth_app/domain/entities/appointment.dart'; // <-- Importar entidad
+import 'package:ehealth_app/domain/entities/patient.dart'; // <-- Importar entidad
+import 'package:ehealth_app/presentation/bloc/appointments/appointments_bloc.dart'; // <-- Importar BLoC de citas
 import 'package:ehealth_app/presentation/bloc/appointments/appointments_event.dart';
+import 'package:ehealth_app/presentation/bloc/appointments/appointments_state.dart';
 import 'package:ehealth_app/presentation/bloc/gamification/gamification_bloc.dart';
 import 'package:ehealth_app/presentation/bloc/login/login_bloc.dart';
-import 'package:ehealth_app/presentation/bloc/notifications/notification_bloc.dart';
+import 'package:ehealth_app/presentation/bloc/patient/patient_bloc.dart'; // <-- Importar BLoC de paciente
 import 'package:ehealth_app/presentation/screens/auth/login_screen.dart';
 import 'package:ehealth_app/presentation/screens/patient/patient_profile_page.dart';
 import 'package:flutter/material.dart';
@@ -11,10 +15,10 @@ import 'package:ehealth_app/presentation/screens/patient/gamification/achievemen
 import 'package:ehealth_app/presentation/screens/patient/gamification/education_screen.dart';
 import 'package:ehealth_app/presentation/screens/patient/gamification/notifications_screen.dart';
 import 'package:ehealth_app/presentation/screens/patient/gamification/pregnancy_timeline_screen.dart';
-// --> NUEVO: Importamos la pantalla de Estadísticas
 import 'package:ehealth_app/presentation/screens/patient/gamification/progress_stats_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ehealth_app/injection_container.dart' as di;
 
@@ -34,6 +38,13 @@ class PatientMainScreen extends StatefulWidget {
 class _PatientMainScreenState extends State<PatientMainScreen> {
   int _selectedIndex = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    // <-- 1. Cargar las citas tan pronto como la pantalla se inicie
+    context.read<AppointmentsBloc>().add(FetchAppointments());
+  }
+
   final List<Widget> _screens = const [
     _PatientHomeTab(),
     MockupCitasScreen(),
@@ -51,6 +62,8 @@ class _PatientMainScreenState extends State<PatientMainScreen> {
 
     switch (index) {
       case 0:
+        // Recargar citas al volver a la pestaña de inicio
+        context.read<AppointmentsBloc>().add(FetchAppointments());
         break;
       case 1:
         break;
@@ -60,7 +73,6 @@ class _PatientMainScreenState extends State<PatientMainScreen> {
       case 3:
         break;
       case 4:
-        context.read<NotificationBloc>().add(LoadNotifications());
         break;
     }
   }
@@ -69,16 +81,27 @@ class _PatientMainScreenState extends State<PatientMainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kBackgroundColor,
+      // <-- 2. Usar un BlocBuilder para obtener los datos del paciente y mostrarlos
       appBar: AppBar(
         iconTheme: const IconThemeData(color: kTextColor),
         backgroundColor: kBackgroundColor,
         elevation: 0,
-        title: Text(
-          _getAppBarTitle(_selectedIndex),
-          style: GoogleFonts.poppins(
-            color: kTextColor,
-            fontWeight: FontWeight.bold,
-          ),
+        title: BlocBuilder<PatientBloc, PatientState>(
+          builder: (context, state) {
+            String title = '¡Hola!';
+            if (state is PatientLoaded) {
+              // Extraemos el primer nombre para un saludo más personal
+              final firstName = state.patient.fullName.split(' ').first;
+              title = '¡Hola, $firstName!';
+            }
+            return Text(
+              title,
+              style: GoogleFonts.poppins(
+                color: kTextColor,
+                fontWeight: FontWeight.bold,
+              ),
+            );
+          },
         ),
         actions: [
           Padding(
@@ -129,94 +152,88 @@ class _PatientMainScreenState extends State<PatientMainScreen> {
       ),
     );
   }
-
-  String _getAppBarTitle(int index) {
-    switch (index) {
-      case 0:
-        return '¡Hola, Anaís!';
-      case 1:
-        return 'Mis Citas';
-      case 2:
-        return 'Mis Logros';
-      case 3:
-        return 'Educación';
-      case 4:
-        return 'Alertas';
-      default:
-        return 'eHealth Prenatal';
-    }
-  }
 }
 
 class _PatientDrawer extends StatelessWidget {
   const _PatientDrawer();
   @override
   Widget build(BuildContext context) {
-    const String fullName = 'Anaís García';
-    const String email = 'anais.garcia@email.com';
+    // <-- 3. Usar otro BlocBuilder para los datos del menú lateral
+    return BlocBuilder<PatientBloc, PatientState>(
+      builder: (context, state) {
+        String fullName = 'Paciente';
+        String email = 'Cargando...';
 
-    return Drawer(
-      child: Column(
-        children: [
-          UserAccountsDrawerHeader(
-            accountName: Text(fullName,
-                style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.bold, fontSize: 18)),
-            accountEmail: Text(email, style: GoogleFonts.poppins()),
-            currentAccountPicture: const CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Icon(Icons.person, size: 40, color: kPrimaryColor),
-            ),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [kPrimaryColor, kPrimaryLightColor],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+        if (state is PatientLoaded) {
+          fullName = state.patient.fullName;
+          // Asumimos que no tenemos el email en el modelo Patient, puedes añadirlo si lo necesitas
+          email = 'DNI: ${state.patient.nationalId}';
+        }
+
+        return Drawer(
+          child: Column(
+            children: [
+              UserAccountsDrawerHeader(
+                accountName: Text(fullName,
+                    style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold, fontSize: 18)),
+                accountEmail: Text(email, style: GoogleFonts.poppins()),
+                currentAccountPicture: const CircleAvatar(
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.person, size: 40, color: kPrimaryColor),
+                ),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [kPrimaryColor, kPrimaryLightColor],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
               ),
-            ),
+              ListTile(
+                leading: const Icon(Icons.person_outline),
+                title: Text('Mi Perfil', style: GoogleFonts.poppins()),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const PatientProfilePage()));
+                },
+              ),
+              ListTile(
+                  leading: const Icon(Icons.settings_outlined),
+                  title: Text('Configuración', style: GoogleFonts.poppins()),
+                  onTap: () {}),
+              const Divider(indent: 16, endIndent: 16),
+              ListTile(
+                leading: const Icon(Icons.logout, color: Colors.redAccent),
+                title: Text('Cerrar sesión',
+                    style: GoogleFonts.poppins(color: Colors.redAccent)),
+                onTap: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.remove('jwt_token');
+                  if (!context.mounted) return;
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                        builder: (context) => BlocProvider(
+                            create: (context) => di.locator<LoginBloc>(),
+                            child: const LoginScreen())),
+                    (Route<dynamic> route) => false,
+                  );
+                },
+              ),
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text('eHealth Prenatal v1.0',
+                    style: GoogleFonts.poppins(
+                        color: Colors.grey[500], fontSize: 12)),
+              ),
+            ],
           ),
-          ListTile(
-            leading: const Icon(Icons.person_outline),
-            title: Text('Mi Perfil', style: GoogleFonts.poppins()),
-            onTap: () {
-              Navigator.of(context).pop();
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const PatientProfilePage()));
-            },
-          ),
-          ListTile(
-              leading: const Icon(Icons.settings_outlined),
-              title: Text('Configuración', style: GoogleFonts.poppins()),
-              onTap: () {}),
-          const Divider(indent: 16, endIndent: 16),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.redAccent),
-            title: Text('Cerrar sesión',
-                style: GoogleFonts.poppins(color: Colors.redAccent)),
-            onTap: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.remove('jwt_token');
-              if (!context.mounted) return;
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(
-                    builder: (context) => BlocProvider(
-                        create: (context) => di.locator<LoginBloc>(),
-                        child: const LoginScreen())),
-                (Route<dynamic> route) => false,
-              );
-            },
-          ),
-          const Spacer(),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text('eHealth Prenatal v1.0',
-                style:
-                    GoogleFonts.poppins(color: Colors.grey[500], fontSize: 12)),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -260,7 +277,6 @@ class _PatientHomeTab extends StatelessWidget {
                   );
                 },
               ),
-              // --> NUEVO: Tarjeta para navegar a Estadísticas
               _buildQuickActionCard(
                 context,
                 'Mi Progreso',
@@ -287,7 +303,28 @@ class _PatientHomeTab extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   color: kTextColor)),
           const SizedBox(height: 16),
-          _buildNextAppointmentCard(),
+          // <-- 4. Usar un BlocBuilder para obtener las citas y mostrar la correcta
+          BlocBuilder<AppointmentsBloc, AppointmentsState>(
+            builder: (context, state) {
+              if (state is AppointmentsLoadSuccess) {
+                // Filtra y ordena las citas para encontrar la próxima
+                final upcomingAppointments = state.appointments
+                    .where((a) => a.appointmentDate.isAfter(DateTime.now()))
+                    .toList()
+                  ..sort(
+                      (a, b) => a.appointmentDate.compareTo(b.appointmentDate));
+
+                if (upcomingAppointments.isNotEmpty) {
+                  return _buildNextAppointmentCard(upcomingAppointments
+                      .first); // Muestra la primera de la lista
+                } else {
+                  return _buildNoUpcomingAppointmentsCard(); // Muestra un mensaje si no hay
+                }
+              }
+              // Muestra un indicador de carga mientras se obtienen los datos
+              return const Center(child: CircularProgressIndicator());
+            },
+          ),
           const SizedBox(height: 32),
           Text('Aprende esta semana',
               style: GoogleFonts.poppins(
@@ -351,7 +388,8 @@ class _PatientHomeTab extends StatelessWidget {
     );
   }
 
-  Widget _buildNextAppointmentCard() {
+  // <-- 5. El método ahora recibe un objeto Appointment
+  Widget _buildNextAppointmentCard(Appointment appointment) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -379,6 +417,7 @@ class _PatientHomeTab extends StatelessWidget {
           Row(children: [
             const Icon(Icons.person_outline, color: Colors.white70, size: 20),
             const SizedBox(width: 10),
+            // El nombre del doctor podría venir de la API en el futuro
             Text('Dr. Carlos Solís',
                 style: GoogleFonts.poppins(color: Colors.white, fontSize: 15)),
           ]),
@@ -387,7 +426,10 @@ class _PatientHomeTab extends StatelessWidget {
             const Icon(Icons.calendar_today_outlined,
                 color: Colors.white70, size: 20),
             const SizedBox(width: 10),
-            Text('Viernes, 30 de agosto',
+            // Usamos la fecha real de la cita
+            Text(
+                DateFormat('EEEE, dd \'de\' MMMM', 'es_ES')
+                    .format(appointment.appointmentDate),
                 style: GoogleFonts.poppins(color: Colors.white, fontSize: 15)),
           ]),
           const SizedBox(height: 10),
@@ -395,10 +437,28 @@ class _PatientHomeTab extends StatelessWidget {
             const Icon(Icons.access_time_outlined,
                 color: Colors.white70, size: 20),
             const SizedBox(width: 10),
-            Text('10:00 AM',
+            // Usamos la hora real de la cita
+            Text(DateFormat('hh:mm a').format(appointment.appointmentDate),
                 style: GoogleFonts.poppins(color: Colors.white, fontSize: 15)),
           ]),
         ],
+      ),
+    );
+  }
+
+  // <-- 6. Nuevo widget para mostrar cuando no hay citas
+  Widget _buildNoUpcomingAppointmentsCard() {
+    return Card(
+      elevation: 2,
+      shadowColor: Colors.grey.withOpacity(0.1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Text(
+          'No tienes citas programadas por el momento.',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey.shade700),
+        ),
       ),
     );
   }
