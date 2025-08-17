@@ -46,8 +46,6 @@ class ApiClient {
     }
   }
 
-  // ... (El resto de los métodos post, patch, delete se mantienen igual)
-
   Future<dynamic> post(String endpoint, {dynamic body}) async {
     final uri = Uri.parse(endpoint);
     try {
@@ -55,7 +53,7 @@ class ApiClient {
           .post(
             uri,
             headers: await _getHeaders(),
-            body: json.encode(body),
+            body: body != null ? json.encode(body) : null,
           )
           .timeout(ApiConfig.connectionTimeout);
       return _handleResponse(response);
@@ -77,7 +75,10 @@ class ApiClient {
           .patch(
             uri,
             headers: await _getHeaders(),
-            body: json.encode(body),
+            // ================== CORRECCIÓN CLAVE AQUÍ ==================
+            // Solo codifica el cuerpo si no es nulo.
+            body: body != null ? json.encode(body) : null,
+            // ==========================================================
           )
           .timeout(ApiConfig.connectionTimeout);
       return _handleResponse(response);

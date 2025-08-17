@@ -1,4 +1,6 @@
 // lib/presentation/screens/patient/gamification/notifications_screen.dart
+import 'dart:async';
+import 'package:ehealth_app/data/services/notification_service.dart'; // Importa el servicio
 import 'package:ehealth_app/presentation/bloc/notifications/notification_bloc.dart';
 import 'package:flutter/material.dart' hide Notification;
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,20 +13,77 @@ const Color kPrimaryLightColor = Color(0xFFF8BBD0);
 const Color kBackgroundColor = Color(0xFFFFF7F8);
 const Color kTextColor = Color(0xFF424242);
 
-class NotificationsScreen extends StatelessWidget {
+class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
+
+  @override
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  Timer? _pollingTimer;
+  final NotificationService _notificationService = NotificationService();
+  // ================== LÓGICA CLAVE ==================
+  // Usamos un Set para guardar los IDs de las notificaciones que ya hemos visto/mostrado
+  final Set<int> _shownNotificationIds = {};
+  // =================================================
+
+  @override
+  void initState() {
+    super.initState();
+    _notificationService.init(); // Inicializamos el servicio
+    _startPolling();
+  }
+
+  @override
+  void dispose() {
+    _stopPolling();
+    super.dispose();
+  }
+
+  void _startPolling() {
+    _pollingTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (mounted) {
+        context.read<NotificationBloc>().add(LoadNotifications());
+      }
+    });
+  }
+
+  void _stopPolling() {
+    _pollingTimer?.cancel();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kBackgroundColor,
-      body: BlocBuilder<NotificationBloc, NotificationState>(
+      // ================== CORRECCIÓN CLAVE ==================
+      // Usamos un BlocConsumer para reaccionar a los cambios de estado y mostrar la notificación
+      body: BlocConsumer<NotificationBloc, NotificationState>(
+        listener: (context, state) {
+          if (state is NotificationLoaded) {
+            // Itera sobre las notificaciones recibidas
+            for (final notification in state.notifications) {
+              // Si la notificación NO está leída Y AÚN NO ha sido mostrada...
+              if (!notification.isRead &&
+                  !_shownNotificationIds.contains(notification.id)) {
+                // ... muéstrala en el dispositivo
+                _notificationService.showInstantNotification(
+                  id: notification.id,
+                  title: notification.title,
+                  body: notification.message,
+                );
+                // ... y añádela al set de notificaciones ya mostradas
+                _shownNotificationIds.add(notification.id);
+              }
+            }
+          }
+        },
         builder: (context, state) {
-          // Casos de Carga e Inicial
+          // El resto del builder no cambia
           if (state is NotificationInitial || state is NotificationLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-          // Caso de Éxito
           if (state is NotificationLoaded) {
             final unreadCount =
                 state.notifications.where((n) => !n.isRead).length;
@@ -39,17 +98,17 @@ class NotificationsScreen extends StatelessWidget {
               ],
             );
           }
-          // Caso de Error
           if (state is NotificationError) {
             return Center(child: Text('Error: ${state.message}'));
           }
-          // Caso por Defecto
           return const Center(child: Text('Algo salió mal.'));
         },
       ),
+      // =========================================================
     );
   }
 
+  // ... (El resto de los métodos _buildHeader, _buildNotificationsList, etc., no cambian)
   Widget _buildHeader(BuildContext context, int unreadCount) {
     return Container(
       margin: const EdgeInsets.all(16),

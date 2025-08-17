@@ -41,11 +41,31 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     MarkOneAsRead event,
     Emitter<NotificationState> emit,
   ) async {
-    try {
-      await markNotificationAsReadUseCase.execute(event.notificationId);
-      add(LoadNotifications()); // Recarga la lista
-    } catch (e) {
-      // Opcional: emitir un estado de error específico para esta acción
+    final currentState = state;
+    if (currentState is NotificationLoaded) {
+      // 1. Actualización Optimista: Actualiza la UI al instante
+      final optimisticList = currentState.notifications.map((n) {
+        if (n.id == event.notificationId) {
+          return n.copyWith(
+              isRead: true); // Usa copyWith para crear un nuevo objeto
+        }
+        return n;
+      }).toList();
+
+      emit(NotificationLoaded(optimisticList));
+
+      // 2. Llama a la API en segundo plano
+      try {
+        await markNotificationAsReadUseCase.execute(event.notificationId);
+        // Opcional: Podrías recargar desde el servidor para consistencia total,
+        // pero con la actualización optimista no suele ser necesario.
+        // add(LoadNotifications());
+      } catch (e) {
+        // 3. Si falla la API, revierte el cambio en la UI
+        emit(
+            NotificationError('No se pudo marcar como leída. Reintentando...'));
+        emit(currentState); // Vuelve al estado original
+      }
     }
   }
 
@@ -53,11 +73,22 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     MarkAllAsRead event,
     Emitter<NotificationState> emit,
   ) async {
-    try {
-      await markAllNotificationsAsReadUseCase.execute();
-      add(LoadNotifications()); // Recarga la lista
-    } catch (e) {
-      // Opcional: emitir un estado de error específico
+    final currentState = state;
+    if (currentState is NotificationLoaded) {
+      // 1. Actualización Optimista
+      final optimisticList = currentState.notifications.map((n) {
+        return n.copyWith(isRead: true);
+      }).toList();
+      emit(NotificationLoaded(optimisticList));
+
+      // 2. Llama a la API
+      try {
+        await markAllNotificationsAsReadUseCase.execute();
+      } catch (e) {
+        // 3. Revierte si falla
+        emit(NotificationError('No se pudo marcar todo como leído.'));
+        emit(currentState);
+      }
     }
   }
 }

@@ -21,7 +21,11 @@ class NotificationService {
         AndroidInitializationSettings('ic_launcher');
 
     const DarwinInitializationSettings initializationSettingsIOS =
-        DarwinInitializationSettings();
+        DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
 
     const InitializationSettings initializationSettings =
         InitializationSettings(
@@ -31,97 +35,94 @@ class NotificationService {
 
     tz.initializeTimeZones();
     await _notificationsPlugin.initialize(initializationSettings);
-    
-    // Configurar canales de notificación
     await _setupNotificationChannels();
   }
 
   Future<void> _setupNotificationChannels() async {
-    // Canal para recordatorios de citas
-    const AndroidNotificationChannel appointmentChannel = AndroidNotificationChannel(
-      'appointment_reminders',
-      'Recordatorios de Citas',
-      description: 'Recordatorios para citas prenatales',
-      importance: Importance.high,
-    );
-
-    // Canal para hitos del embarazo
-    const AndroidNotificationChannel milestoneChannel = AndroidNotificationChannel(
-      'pregnancy_milestones',
-      'Hitos del Embarazo',
-      description: 'Notificaciones sobre el progreso del embarazo',
-      importance: Importance.defaultImportance,
-    );
-
-    // Canal para logros y puntos
-    const AndroidNotificationChannel achievementChannel = AndroidNotificationChannel(
-      'achievements',
-      'Logros y Puntos',
-      description: 'Notificaciones de logros y sistema de puntos',
-      importance: Importance.low,
+    const AndroidNotificationChannel generalChannel =
+        AndroidNotificationChannel(
+      'general_notifications', // ID del nuevo canal
+      'Alertas y Consejos', // Nombre del canal
+      description: 'Notificaciones generales, consejos de salud y logros.',
+      importance: Importance.max,
+      playSound: true,
     );
 
     await _notificationsPlugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(appointmentChannel);
-
-    await _notificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(milestoneChannel);
-
-    await _notificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(achievementChannel);
+        ?.createNotificationChannel(generalChannel);
   }
 
   Future<void> _requestNotificationPermissions() async {
-    final status = await Permission.notification.request();
-    if (status.isGranted) {
-      print("Permiso de notificaciones concedido");
-    } else if (status.isDenied) {
-      print("Permiso de notificaciones denegado");
-    } else if (status.isPermanentlyDenied) {
-      print("Permiso de notificaciones denegado permanentemente");
-    }
+    await Permission.notification.request();
   }
 
-  Future<void> cancelAllNotifications() async {
-    await _notificationsPlugin.cancelAll();
-  }
+  // ================== FUNCIÓN NUEVA ==================
+  // Muestra una notificación instantánea de alta prioridad
+  Future<void> showInstantNotification(
+      {required int id, required String title, required String body}) async {
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'general_notifications', // Usa el ID del nuevo canal
+        'Alertas y Consejos',
+        channelDescription:
+            'Notificaciones generales, consejos de salud y logros.',
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+        icon: 'ic_launcher',
+      ),
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+    );
 
-  // Notificación de recordatorio de cita (mejorada)
+    await _notificationsPlugin.show(
+      id,
+      title,
+      body,
+      notificationDetails,
+    );
+  }
+  // =========================================================
+
   Future<void> scheduleAppointmentNotification(Appointment appointment) async {
-    final appointmentDate = appointment.appointmentDate;
-    final now = DateTime.now();
-    
-    // Programar notificación 1 día antes
-    final reminderDate = appointmentDate.subtract(const Duration(days: 1));
-    
-    if (reminderDate.isBefore(now)) {
-      return; // La cita ya pasó o es muy pronto
-    }
+    final reminderDate =
+        appointment.appointmentDate.subtract(const Duration(days: 1));
+    if (reminderDate.isBefore(DateTime.now())) return;
 
-    final tz.TZDateTime scheduledDate = tz.TZDateTime.from(reminderDate, tz.local);
+    final tz.TZDateTime scheduledDate =
+        tz.TZDateTime.from(reminderDate, tz.local);
+
+    // ================== CORRECCIÓN CLAVE 2 ==================
+    // Mejoramos los detalles de la notificación para que tenga sonido y prioridad
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'appointment_reminders',
+        'Recordatorios de Citas',
+        channelDescription: 'Recordatorios para citas prenatales',
+        importance: Importance.max, // Prioridad máxima
+        priority: Priority.high, // Notificación emergente (heads-up)
+        playSound: true,
+        icon: 'ic_launcher',
+      ),
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true, // Habilitar sonido en iOS
+      ),
+    );
+    // =========================================================
 
     await _notificationsPlugin.zonedSchedule(
       appointment.id,
       'Recordatorio de Cita Prenatal',
-      'Tienes una cita mañana a las ${DateFormat('hh:mm a').format(appointmentDate)}. ¡No olvides asistir!',
+      'Tienes una cita mañana a las ${DateFormat('hh:mm a').format(appointment.appointmentDate)}. ¡No olvides asistir!',
       scheduledDate,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'appointment_reminders',
-          'Recordatorios de Citas',
-          channelDescription: 'Recordatorios para citas prenatales',
-          importance: Importance.high,
-          priority: Priority.high,
-          icon: 'ic_launcher',
-        ),
-        iOS: DarwinNotificationDetails(),
-      ),
+      notificationDetails, // Usamos los nuevos detalles
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
@@ -129,9 +130,10 @@ class NotificationService {
   }
 
   // Notificación de hito del embarazo
-  Future<void> schedulePregnancyMilestoneNotification(String milestone, DateTime date) async {
+  Future<void> schedulePregnancyMilestoneNotification(
+      String milestone, DateTime date) async {
     final tz.TZDateTime scheduledDate = tz.TZDateTime.from(date, tz.local);
-    
+
     if (scheduledDate.isBefore(tz.TZDateTime.now(tz.local))) {
       return;
     }
