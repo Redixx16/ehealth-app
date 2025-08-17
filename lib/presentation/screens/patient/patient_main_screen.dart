@@ -2,6 +2,7 @@
 import 'package:ehealth_app/presentation/bloc/appointments/appointments_event.dart';
 import 'package:ehealth_app/presentation/bloc/gamification/gamification_bloc.dart';
 import 'package:ehealth_app/presentation/bloc/login/login_bloc.dart';
+import 'package:ehealth_app/presentation/bloc/notifications/notification_bloc.dart';
 import 'package:ehealth_app/presentation/screens/auth/login_screen.dart';
 import 'package:ehealth_app/presentation/screens/patient/patient_profile_page.dart';
 import 'package:flutter/material.dart';
@@ -59,6 +60,7 @@ class _PatientMainScreenState extends State<PatientMainScreen> {
       case 3:
         break;
       case 4:
+        context.read<NotificationBloc>().add(LoadNotifications());
         break;
     }
   }

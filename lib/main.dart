@@ -2,6 +2,7 @@
 import 'package:ehealth_app/presentation/bloc/gamification/gamification_bloc.dart';
 import 'package:ehealth_app/presentation/bloc/patient/patient_bloc.dart';
 import 'package:ehealth_app/presentation/bloc/login/login_bloc.dart';
+import 'package:ehealth_app/presentation/bloc/notifications/notification_bloc.dart';
 import 'package:ehealth_app/presentation/screens/auth/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -96,6 +97,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => di.locator<LoginBloc>()),
         BlocProvider(create: (context) => di.locator<PatientBloc>()),
         BlocProvider(create: (context) => di.locator<GamificationBloc>()),
+        BlocProvider(create: (context) => di.locator<NotificationBloc>()),
       ],
       child: MaterialApp(
         title: 'eHealth Prenatal',
