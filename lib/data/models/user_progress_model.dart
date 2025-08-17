@@ -46,27 +46,4 @@ class UserProgressModel extends UserProgress {
           json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
     );
   }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'userId': userId,
-      'totalPoints': totalPoints,
-      'level': level,
-      'experiencePoints': experiencePoints,
-      'appointmentsAttended': appointmentsAttended,
-      'healthCheckupsCompleted': healthCheckupsCompleted,
-      'educationModulesCompleted': educationModulesCompleted,
-      'currentStreak': currentStreak,
-      'longestStreak': longestStreak,
-      'lastActivityDate': lastActivityDate?.toIso8601String(),
-      'completedMilestones': completedMilestones,
-      'unlockedAchievements': unlockedAchievements,
-      'weeklyGoals': weeklyGoals,
-      'monthlyGoals': monthlyGoals,
-      'createdAt': createdAt?.toIso8601String(),
-      'updatedAt': updatedAt?.toIso8601String(),
-    };
-  }
 }

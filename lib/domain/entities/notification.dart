@@ -1,20 +1,18 @@
+// lib/domain/entities/notification.dart
 import 'package:equatable/equatable.dart';
 
+// Enum actualizado para coincidir 100% con el backend
 enum NotificationType {
   APPOINTMENT_REMINDER,
   MILESTONE_ACHIEVED,
   ACHIEVEMENT_UNLOCKED,
   HEALTH_TIP,
   EDUCATIONAL_CONTENT,
-  SYSTEM_UPDATE
+  SYSTEM_UPDATE,
+  UNKNOWN // Un valor por defecto para seguridad
 }
 
-enum NotificationPriority {
-  LOW,
-  MEDIUM,
-  HIGH,
-  URGENT
-}
+enum NotificationPriority { LOW, MEDIUM, HIGH, URGENT }
 
 class Notification extends Equatable {
   final int id;
@@ -50,98 +48,66 @@ class Notification extends Equatable {
   });
 
   factory Notification.fromJson(Map<String, dynamic> json) {
+    // Función segura para convertir string a enum
+    NotificationType getType(String? typeStr) {
+      switch (typeStr) {
+        case 'appointment_reminder':
+          return NotificationType.APPOINTMENT_REMINDER;
+        case 'milestone_achieved':
+          return NotificationType.MILESTONE_ACHIEVED;
+        case 'achievement_unlocked':
+          return NotificationType.ACHIEVEMENT_UNLOCKED;
+        case 'health_tip':
+          return NotificationType.HEALTH_TIP;
+        case 'educational_content':
+          return NotificationType.EDUCATIONAL_CONTENT;
+        case 'system_update':
+          return NotificationType.SYSTEM_UPDATE;
+        default:
+          return NotificationType.UNKNOWN;
+      }
+    }
+
     return Notification(
       id: json['id'],
       userId: json['userId'],
       title: json['title'],
       message: json['message'],
-      type: NotificationType.values.firstWhere(
-        (e) => e.toString().split('.').last == json['type'],
-        orElse: () => NotificationType.APPOINTMENT_REMINDER,
-      ),
+      type: getType(json['type']),
       priority: NotificationPriority.values.firstWhere(
-        (e) => e.toString().split('.').last == json['priority'],
+        (e) => e.name.toLowerCase() == json['priority'],
         orElse: () => NotificationPriority.MEDIUM,
       ),
       isRead: json['isRead'] ?? false,
       isSent: json['isSent'] ?? false,
-      scheduledAt: json['scheduledAt'] != null ? DateTime.parse(json['scheduledAt']) : null,
+      scheduledAt: json['scheduledAt'] != null
+          ? DateTime.parse(json['scheduledAt'])
+          : null,
       sentAt: json['sentAt'] != null ? DateTime.parse(json['sentAt']) : null,
       metadata: json['metadata'],
       actionData: json['actionData'],
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
-      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'userId': userId,
-      'title': title,
-      'message': message,
-      'type': type.toString().split('.').last,
-      'priority': priority.toString().split('.').last,
-      'isRead': isRead,
-      'isSent': isSent,
-      'scheduledAt': scheduledAt?.toIso8601String(),
-      'sentAt': sentAt?.toIso8601String(),
-      'metadata': metadata,
-      'actionData': actionData,
-      'createdAt': createdAt?.toIso8601String(),
-      'updatedAt': updatedAt?.toIso8601String(),
-    };
-  }
-
-  Notification copyWith({
-    int? id,
-    int? userId,
-    String? title,
-    String? message,
-    NotificationType? type,
-    NotificationPriority? priority,
-    bool? isRead,
-    bool? isSent,
-    DateTime? scheduledAt,
-    DateTime? sentAt,
-    Map<String, dynamic>? metadata,
-    Map<String, dynamic>? actionData,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) {
-    return Notification(
-      id: id ?? this.id,
-      userId: userId ?? this.userId,
-      title: title ?? this.title,
-      message: message ?? this.message,
-      type: type ?? this.type,
-      priority: priority ?? this.priority,
-      isRead: isRead ?? this.isRead,
-      isSent: isSent ?? this.isSent,
-      scheduledAt: scheduledAt ?? this.scheduledAt,
-      sentAt: sentAt ?? this.sentAt,
-      metadata: metadata ?? this.metadata,
-      actionData: actionData ?? this.actionData,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
+      createdAt:
+          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      updatedAt:
+          json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
     );
   }
 
   @override
   List<Object?> get props => [
-    id,
-    userId,
-    title,
-    message,
-    type,
-    priority,
-    isRead,
-    isSent,
-    scheduledAt,
-    sentAt,
-    metadata,
-    actionData,
-    createdAt,
-    updatedAt,
-  ];
-} 
+        id,
+        userId,
+        title,
+        message,
+        type,
+        priority,
+        isRead,
+        isSent,
+        scheduledAt,
+        sentAt,
+        metadata,
+        actionData,
+        createdAt,
+        updatedAt,
+      ];
+}

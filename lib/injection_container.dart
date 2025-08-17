@@ -18,6 +18,9 @@ import 'package:ehealth_app/domain/usecases/gamification/get_achievements.dart';
 import 'package:ehealth_app/domain/usecases/gamification/get_pregnancy_milestones.dart';
 import 'package:ehealth_app/domain/usecases/gamification/get_user_progress.dart';
 import 'package:ehealth_app/domain/usecases/gamification/increment_appointment_attendance.dart';
+import 'package:ehealth_app/domain/usecases/notifications/get_notifications.dart';
+import 'package:ehealth_app/domain/usecases/notifications/mark_all_notifications_as_read.dart';
+import 'package:ehealth_app/domain/usecases/notifications/mark_notification_as_read.dart';
 
 // DataSources
 import 'package:ehealth_app/data/datasources/auth_remote_data_source.dart';
@@ -30,9 +33,11 @@ import 'package:ehealth_app/data/datasources/appointment_remote_data_source.dart
 import 'package:ehealth_app/domain/repositories/patient_repository.dart';
 import 'package:ehealth_app/domain/repositories/gamification_repository.dart';
 import 'package:ehealth_app/domain/repositories/appointment_repository.dart';
+import 'package:ehealth_app/domain/repositories/notification_repository.dart';
 import 'package:ehealth_app/data/repositories/patient_repository_impl.dart';
 import 'package:ehealth_app/data/repositories/gamification_repository_impl.dart';
 import 'package:ehealth_app/data/repositories/appointment_repository_impl.dart';
+import 'package:ehealth_app/data/repositories/notification_repository_impl.dart';
 
 // BLoCs
 import 'package:ehealth_app/presentation/bloc/login/login_bloc.dart';
@@ -43,6 +48,7 @@ import 'package:ehealth_app/presentation/bloc/create_appointment/create_appointm
 import 'package:ehealth_app/presentation/bloc/delete_appointment/delete_appointment_bloc.dart';
 import 'package:ehealth_app/presentation/bloc/update_appointment/update_appointment_bloc.dart';
 import 'package:ehealth_app/presentation/bloc/register/register_bloc.dart';
+import 'package:ehealth_app/presentation/bloc/notifications/notification_bloc.dart';
 
 final locator = GetIt.instance;
 
@@ -54,15 +60,12 @@ Future<void> setupLocator() async {
   // ======================================================
 
   // --- USE CASES ---
-  // Patient
   locator.registerLazySingleton(() => GetPatientUseCase(locator()));
   locator.registerLazySingleton(() => CreatePatientUseCase(locator()));
-  // Appointments
   locator.registerLazySingleton(() => GetAppointmentsUseCase(locator()));
   locator.registerLazySingleton(() => CreateAppointmentUseCase(locator()));
   locator.registerLazySingleton(() => UpdateAppointmentUseCase(locator()));
   locator.registerLazySingleton(() => DeleteAppointmentUseCase(locator()));
-  // Gamification
   locator.registerLazySingleton(() => GetUserProgressUseCase(locator()));
   locator.registerLazySingleton(() => GetAchievementsUseCase(locator()));
   locator.registerLazySingleton(() => GetPregnancyMilestonesUseCase(locator()));
@@ -71,6 +74,10 @@ Future<void> setupLocator() async {
   locator
       .registerLazySingleton(() => CheckAndAwardAchievementsUseCase(locator()));
   locator.registerLazySingleton(() => AddPointsUseCase(locator()));
+  locator.registerLazySingleton(() => GetNotificationsUseCase(locator()));
+  locator.registerLazySingleton(() => MarkNotificationAsReadUseCase(locator()));
+  locator.registerLazySingleton(
+      () => MarkAllNotificationsAsReadUseCase(locator()));
 
   // --- BLOCS ---
   locator.registerFactory(() => LoginBloc(authRemoteDataSource: locator()));
@@ -86,6 +93,11 @@ Future<void> setupLocator() async {
         incrementAppointmentAttendanceUseCase: locator(),
         checkAndAwardAchievementsUseCase: locator(),
         addPointsUseCase: locator(),
+      ));
+  locator.registerFactory(() => NotificationBloc(
+        getNotificationsUseCase: locator(),
+        markNotificationAsReadUseCase: locator(),
+        markAllNotificationsAsReadUseCase: locator(),
       ));
   locator.registerFactory(
       () => AppointmentsBloc(getAppointmentsUseCase: locator()));
@@ -105,6 +117,9 @@ Future<void> setupLocator() async {
   );
   locator.registerLazySingleton<AppointmentRepository>(
     () => AppointmentRepositoryImpl(remoteDataSource: locator()),
+  );
+  locator.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepositoryImpl(remoteDataSource: locator()),
   );
 
   // --- DATA SOURCES ---

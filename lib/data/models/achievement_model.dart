@@ -38,21 +38,4 @@ class AchievementModel extends Achievement {
           json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
     );
   }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'description': description,
-      'type': type.toString().split('.').last,
-      'difficulty': difficulty.toString().split('.').last,
-      'pointsReward': pointsReward,
-      'iconName': iconName,
-      'isActive': isActive,
-      'requirements': requirements,
-      'createdAt': createdAt?.toIso8601String(),
-      'updatedAt': updatedAt?.toIso8601String(),
-    };
-  }
 }

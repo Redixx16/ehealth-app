@@ -1,4 +1,3 @@
-// lib/domain/usecases/gamification/increment_appointment_attendance.dart
 import 'package:ehealth_app/domain/entities/user_progress.dart';
 import 'package:ehealth_app/domain/repositories/gamification_repository.dart';
 
