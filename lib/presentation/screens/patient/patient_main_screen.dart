@@ -426,10 +426,11 @@ class _PatientHomeTab extends StatelessWidget {
             const Icon(Icons.calendar_today_outlined,
                 color: Colors.white70, size: 20),
             const SizedBox(width: 10),
-            // Usamos la fecha real de la cita
+            // ================== CORRECCIÓN 1 de 2 ==================
+            // Usamos la fecha real de la cita y la convertimos a local
             Text(
                 DateFormat('EEEE, dd \'de\' MMMM', 'es_ES')
-                    .format(appointment.appointmentDate),
+                    .format(appointment.appointmentDate.toLocal()),
                 style: GoogleFonts.poppins(color: Colors.white, fontSize: 15)),
           ]),
           const SizedBox(height: 10),
@@ -437,8 +438,11 @@ class _PatientHomeTab extends StatelessWidget {
             const Icon(Icons.access_time_outlined,
                 color: Colors.white70, size: 20),
             const SizedBox(width: 10),
-            // Usamos la hora real de la cita
-            Text(DateFormat('hh:mm a').format(appointment.appointmentDate),
+            // ================== CORRECCIÓN 2 de 2 ==================
+            // Usamos la hora real de la cita y la convertimos a local
+            Text(
+                DateFormat('hh:mm a')
+                    .format(appointment.appointmentDate.toLocal()),
                 style: GoogleFonts.poppins(color: Colors.white, fontSize: 15)),
           ]),
         ],

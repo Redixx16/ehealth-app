@@ -36,7 +36,7 @@ class _PregnancyTimelineScreenState extends State<PregnancyTimelineScreen> {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Timeline del Embarazo'),
+        title: const Text('Mi Embarazo'),
         leading: const BackButton(color: kTextColor),
         backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
@@ -57,13 +57,16 @@ class _PregnancyTimelineScreenState extends State<PregnancyTimelineScreen> {
             }
             return _buildTimeline(state.milestones);
           }
-          // Manejo de error o estado inicial
-          return Center(
-            child: Text(
-              'No se pudieron cargar los hitos.',
-              style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
-            ),
-          );
+          if (state is GamificationError) {
+            return Center(
+              child: Text(
+                'Error: ${state.message}',
+                style: GoogleFonts.poppins(fontSize: 16, color: Colors.red),
+              ),
+            );
+          }
+          // Manejo de estado inicial
+          return const Center(child: CircularProgressIndicator());
         },
       ),
     );
@@ -85,6 +88,7 @@ class _PregnancyTimelineScreenState extends State<PregnancyTimelineScreen> {
   }
 
   Widget _buildHeader(List<PregnancyMilestone> milestones) {
+    // <-- AHORA USAMOS DATOS REALES
     final completedMilestones = milestones.where((m) => m.isActive).length;
     final totalMilestones = milestones.length;
     final progress =
@@ -172,13 +176,13 @@ class _PregnancyTimelineScreenState extends State<PregnancyTimelineScreen> {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
-          final milestone = milestones.reversed
-              .toList()[index]; // Mostrar más recientes primero
+          // Ordenamos de más reciente a más antiguo para la vista
+          final milestone = milestones.reversed.toList()[index];
           final isLast = index == milestones.length - 1;
-          // Simulación de hitos incompletos para las primeras semanas
-          final isCompleted = milestone.weekNumber > 10;
+
+          // <-- LA LÓGICA DE SIMULACIÓN SE ELIMINA Y USAMOS EL DATO REAL
           return _buildTimelineItem(milestone, isLast,
-              isCompleted: isCompleted);
+              isCompleted: milestone.isActive);
         },
         childCount: milestones.length,
       ),
@@ -186,7 +190,8 @@ class _PregnancyTimelineScreenState extends State<PregnancyTimelineScreen> {
   }
 
   Widget _buildTimelineItem(PregnancyMilestone milestone, bool isLast,
-      {bool isCompleted = true}) {
+      {required bool isCompleted}) {
+    // <-- `isCompleted` ahora es requerido
     final theme = Theme.of(context);
     final Color activeColor = Colors.green.shade400;
     final Color inactiveColor = Colors.grey.shade400;
@@ -289,8 +294,8 @@ class _PregnancyTimelineScreenState extends State<PregnancyTimelineScreen> {
                       height: 1.5,
                     ),
                   ),
+                  const Divider(height: 24),
                   if (isCompleted) ...{
-                    const Divider(height: 24),
                     Row(
                       children: [
                         Icon(Icons.check_circle, color: activeColor, size: 16),
@@ -306,7 +311,6 @@ class _PregnancyTimelineScreenState extends State<PregnancyTimelineScreen> {
                       ],
                     ),
                   } else ...{
-                    const Divider(height: 24),
                     Row(
                       children: [
                         Icon(Icons.radio_button_unchecked,

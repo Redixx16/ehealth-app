@@ -22,7 +22,7 @@ class _ProgressStatsScreenState extends State<ProgressStatsScreen> {
   @override
   void initState() {
     super.initState();
-    // Cargamos todos los datos necesarios para esta pantalla
+    // <-- 1. Cargamos el progreso del usuario al entrar a la pantalla
     context.read<GamificationBloc>().add(const LoadUserProgress(userId: 1));
   }
 
@@ -33,15 +33,19 @@ class _ProgressStatsScreenState extends State<ProgressStatsScreen> {
       appBar: AppBar(
         title: const Text('Tu Progreso'),
       ),
+      // <-- 2. Usamos un BlocBuilder para reaccionar a los estados
       body: BlocBuilder<GamificationBloc, GamificationState>(
         builder: (context, state) {
           if (state is UserProgressLoaded) {
+            // Si los datos se cargaron, construimos la vista con los datos reales
             return _buildStatsContent(state.progress);
           }
           if (state is GamificationError) {
-            return Center(child: Text('Error: ${state.message}'));
+            // Si hay un error, mostramos un mensaje
+            return Center(
+                child: Text('Error al cargar tu progreso: ${state.message}'));
           }
-          // Muestra un indicador de carga para el estado inicial y de carga
+          // Mientras carga o en el estado inicial, mostramos un spinner
           return const Center(child: CircularProgressIndicator());
         },
       ),
@@ -62,6 +66,7 @@ class _ProgressStatsScreenState extends State<ProgressStatsScreen> {
     );
   }
 
+  // <-- 3. Los siguientes métodos ahora reciben el objeto `progress` con datos reales
   Widget _buildProgressOverview(UserProgress progress) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -173,6 +178,7 @@ class _ProgressStatsScreenState extends State<ProgressStatsScreen> {
   }
 
   Widget _buildLevelProgress(UserProgress progress) {
+    // Calculamos el progreso porcentual para la barra
     final progressPercentage = (progress.experiencePoints % 100) / 100;
 
     return Card(
