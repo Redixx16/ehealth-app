@@ -7,6 +7,8 @@ abstract class PatientEvent extends Equatable {
   List<Object> get props => [];
 }
 
+class GetAllPatients extends PatientEvent {}
+
 class CreatePatient extends PatientEvent {
   final Patient patient;
 

@@ -1,6 +1,6 @@
 // lib/presentation/screens/patient/patient_main_screen.dart
 import 'package:ehealth_app/domain/entities/appointment.dart'; // <-- Importar entidad
-import 'package:ehealth_app/domain/entities/patient.dart'; // <-- Importar entidad
+// <-- Importar entidad
 import 'package:ehealth_app/presentation/bloc/appointments/appointments_bloc.dart'; // <-- Importar BLoC de citas
 import 'package:ehealth_app/presentation/bloc/appointments/appointments_event.dart';
 import 'package:ehealth_app/presentation/bloc/appointments/appointments_state.dart';

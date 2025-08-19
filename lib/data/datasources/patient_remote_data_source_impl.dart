@@ -12,6 +12,13 @@ class PatientRemoteDataSourceImpl implements PatientRemoteDataSource {
   PatientRemoteDataSourceImpl({required this.apiClient});
 
   @override
+  Future<List<PatientModel>> getPatients() async {
+    final response = await apiClient.get(ApiConfig.allPatientsUrl);
+    final List<dynamic> jsonList = response;
+    return jsonList.map((json) => PatientModel.fromJson(json)).toList();
+  }
+
+  @override
   Future<PatientModel> createPatient(PatientModel patient) async {
     final response = await apiClient.post(
       ApiConfig.patientsEndpoint, // Usamos el endpoint relativo

@@ -1,4 +1,5 @@
 // lib/injection_container.dart
+import 'package:ehealth_app/domain/usecases/get_patients.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 
@@ -61,6 +62,7 @@ Future<void> setupLocator() async {
 
   // --- USE CASES ---
   locator.registerLazySingleton(() => GetPatientUseCase(locator()));
+  locator.registerLazySingleton(() => GetPatientsUseCase(locator()));
   locator.registerLazySingleton(() => CreatePatientUseCase(locator()));
   locator.registerLazySingleton(() => GetAppointmentsUseCase(locator()));
   locator.registerLazySingleton(() => CreateAppointmentUseCase(locator()));
@@ -85,6 +87,7 @@ Future<void> setupLocator() async {
   locator.registerFactory(() => PatientBloc(
         getPatientUseCase: locator(),
         createPatientUseCase: locator(),
+        getPatientsUseCase: locator(),
       ));
   locator.registerFactory(() => GamificationBloc(
         getUserProgressUseCase: locator(),

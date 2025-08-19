@@ -62,8 +62,8 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
         // add(LoadNotifications());
       } catch (e) {
         // 3. Si falla la API, revierte el cambio en la UI
-        emit(
-            NotificationError('No se pudo marcar como leída. Reintentando...'));
+        emit(const NotificationError(
+            'No se pudo marcar como leída. Reintentando...'));
         emit(currentState); // Vuelve al estado original
       }
     }
@@ -86,7 +86,7 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
         await markAllNotificationsAsReadUseCase.execute();
       } catch (e) {
         // 3. Revierte si falla
-        emit(NotificationError('No se pudo marcar todo como leído.'));
+        emit(const NotificationError('No se pudo marcar todo como leído.'));
         emit(currentState);
       }
     }

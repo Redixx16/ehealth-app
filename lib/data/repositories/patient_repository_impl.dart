@@ -1,4 +1,3 @@
-
 import 'package:ehealth_app/data/datasources/patient_remote_data_source.dart';
 import 'package:ehealth_app/data/models/patient_model.dart';
 import 'package:ehealth_app/domain/entities/patient.dart';
@@ -23,9 +22,14 @@ class PatientRepositoryImpl implements PatientRepository {
       estimatedDueDate: patient.estimatedDueDate,
       medicalHistory: patient.medicalHistory,
     );
-    
+
     final createdPatient = await remoteDataSource.createPatient(patientModel);
     return createdPatient;
+  }
+
+  @override
+  Future<List<Patient>> getPatients() async {
+    return await remoteDataSource.getPatients();
   }
 
   @override
@@ -47,7 +51,7 @@ class PatientRepositoryImpl implements PatientRepository {
       estimatedDueDate: patient.estimatedDueDate,
       medicalHistory: patient.medicalHistory,
     );
-    
+
     final updatedPatient = await remoteDataSource.updatePatient(patientModel);
     return updatedPatient;
   }

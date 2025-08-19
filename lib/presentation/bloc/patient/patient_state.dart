@@ -1,4 +1,3 @@
-
 part of 'patient_bloc.dart';
 
 abstract class PatientState extends Equatable {
@@ -14,7 +13,6 @@ class PatientLoading extends PatientState {}
 
 class PatientProfileNotFound extends PatientState {}
 
-
 class PatientLoaded extends PatientState {
   final Patient patient;
 
@@ -22,6 +20,15 @@ class PatientLoaded extends PatientState {
 
   @override
   List<Object> get props => [patient];
+}
+
+class AllPatientsLoaded extends PatientState {
+  final List<Patient> patients;
+
+  const AllPatientsLoaded(this.patients);
+
+  @override
+  List<Object> get props => [patients];
 }
 
 class PatientError extends PatientState {
