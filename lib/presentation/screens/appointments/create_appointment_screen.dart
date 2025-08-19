@@ -1,9 +1,12 @@
 // lib/presentation/screens/appointments/create_appointment_screen.dart
+import 'package:ehealth_app/domain/entities/patient.dart';
 import 'package:ehealth_app/presentation/bloc/create_appointment/create_appointment_bloc.dart';
 import 'package:ehealth_app/presentation/bloc/create_appointment/create_appointment_event.dart';
 import 'package:ehealth_app/presentation/bloc/create_appointment/create_appointment_state.dart';
+import 'package:ehealth_app/presentation/bloc/patient/patient_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:ehealth_app/injection_container.dart' as di;
 
@@ -12,29 +15,28 @@ class CreateAppointmentScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Proveemos el BLoC a través del árbol de widgets
-    return BlocProvider(
-      create: (context) => di.locator<CreateAppointmentBloc>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => di.locator<CreateAppointmentBloc>(),
+        ),
+        BlocProvider.value(
+          value: BlocProvider.of<PatientBloc>(context)..add(GetAllPatients()),
+        ),
+      ],
       child: const _CreateAppointmentView(),
     );
   }
 }
 
-// Widget interno que maneja el estado de la UI (controladores, fecha, etc.)
-class _CreateAppointmentView extends StatefulWidget {
-  const _CreateAppointmentView();
-
-  @override
-  State<_CreateAppointmentView> createState() => _CreateAppointmentViewState();
-}
-
 class _CreateAppointmentViewState extends State<_CreateAppointmentView> {
-  final _patientIdController = TextEditingController();
+  Patient? _selectedPatient;
   DateTime? _selectedDate;
+  final _dateController = TextEditingController();
 
   @override
   void dispose() {
-    _patientIdController.dispose();
+    _dateController.dispose();
     super.dispose();
   }
 
@@ -61,6 +63,8 @@ class _CreateAppointmentViewState extends State<_CreateAppointmentView> {
             pickedTime.hour,
             pickedTime.minute,
           );
+          _dateController.text =
+              DateFormat('dd/MM/yyyy, hh:mm a').format(_selectedDate!);
         });
       }
     }
@@ -84,7 +88,7 @@ class _CreateAppointmentViewState extends State<_CreateAppointmentView> {
                   content: Text('Cita creada exitosamente'),
                   backgroundColor: Colors.green),
             );
-            Navigator.of(context).pop();
+            Navigator.of(context).pop(true);
           }
           if (state is CreateAppointmentFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -108,11 +112,51 @@ class _CreateAppointmentViewState extends State<_CreateAppointmentView> {
                         ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 24),
-                  TextField(
-                    controller: _patientIdController,
+                  BlocBuilder<PatientBloc, PatientState>(
+                    builder: (context, state) {
+                      if (state is AllPatientsLoaded) {
+                        return DropdownButtonFormField<Patient>(
+                          value: _selectedPatient,
+                          onChanged: (Patient? newValue) {
+                            setState(() {
+                              _selectedPatient = newValue;
+                            });
+                          },
+                          items: state.patients.map<DropdownMenuItem<Patient>>(
+                              (Patient patient) {
+                            return DropdownMenuItem<Patient>(
+                              value: patient,
+                              child: Text(patient.fullName),
+                            );
+                          }).toList(),
+                          decoration: InputDecoration(
+                            labelText: 'Seleccionar Paciente',
+                            prefixIcon: const Icon(Icons.person_outline),
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide:
+                                  BorderSide(color: Colors.grey.shade300),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide:
+                                  BorderSide(color: Colors.grey.shade300),
+                            ),
+                          ),
+                        );
+                      }
+                      return const Center(child: CircularProgressIndicator());
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: _dateController,
+                    readOnly: true,
                     decoration: InputDecoration(
-                      labelText: 'ID de la Paciente (Gestante)',
-                      prefixIcon: const Icon(Icons.person_outline),
+                      labelText: 'Fecha y Hora',
+                      prefixIcon: const Icon(Icons.calendar_today_outlined),
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
@@ -124,26 +168,7 @@ class _CreateAppointmentViewState extends State<_CreateAppointmentView> {
                         borderSide: BorderSide(color: Colors.grey.shade300),
                       ),
                     ),
-                    keyboardType: TextInputType.number,
-                  ),
-                  const SizedBox(height: 20),
-                  Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    elevation: 0,
-                    child: ListTile(
-                      leading: Icon(Icons.calendar_today_outlined,
-                          color: Theme.of(context).primaryColor),
-                      title: Text(
-                        _selectedDate == null
-                            ? 'Seleccionar fecha y hora'
-                            : DateFormat('dd/MM/yyyy, hh:mm a')
-                                .format(_selectedDate!),
-                      ),
-                      onTap: () => _selectDate(context),
-                    ),
+                    onTap: () => _selectDate(context),
                   ),
                   const SizedBox(height: 40),
                   BlocBuilder<CreateAppointmentBloc, CreateAppointmentState>(
@@ -159,13 +184,12 @@ class _CreateAppointmentViewState extends State<_CreateAppointmentView> {
                         onPressed: state is CreateAppointmentLoading
                             ? null
                             : () {
-                                final patientId =
-                                    int.tryParse(_patientIdController.text);
-                                if (patientId != null &&
+                                if (_selectedPatient != null &&
                                     _selectedDate != null) {
                                   context.read<CreateAppointmentBloc>().add(
                                         CreateButtonPressed(
-                                          patientId: patientId,
+                                          // <-- CORRECCIÓN: Usamos el userId
+                                          patientId: _selectedPatient!.userId,
                                           appointmentDate: _selectedDate!,
                                         ),
                                       );
@@ -194,4 +218,11 @@ class _CreateAppointmentViewState extends State<_CreateAppointmentView> {
       ),
     );
   }
+}
+
+class _CreateAppointmentView extends StatefulWidget {
+  const _CreateAppointmentView();
+
+  @override
+  State<_CreateAppointmentView> createState() => _CreateAppointmentViewState();
 }

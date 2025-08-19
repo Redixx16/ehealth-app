@@ -13,7 +13,6 @@ const Color kPrimaryLightColor = Color(0xFFF8BBD0);
 const Color kBackgroundColor = Color(0xFFFFF7F8);
 const Color kTextColor = Color(0xFF424242);
 
-// --> NUEVO: Convertimos el widget a StatefulWidget para manejar la animación
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -21,13 +20,11 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-// --> NUEVO: Añadimos 'SingleTickerProviderStateMixin' para la animación
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  // --> NUEVO: Variables para controlar la animación de deslizamiento
   late final AnimationController _animationController;
   late final Animation<Offset> _slideAnimation;
 
@@ -35,27 +32,24 @@ class _LoginScreenState extends State<LoginScreen>
   void initState() {
     super.initState();
 
-    // --> NUEVO: Configuración e inicio de la animación
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
 
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(
-          0, 1.5), // Empieza abajo (1.5 = 150% de su altura hacia abajo)
-      end: Offset.zero, // Termina en su posición original
+      begin: const Offset(0, 1.5),
+      end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeOutQuad, // Una curva suave para desacelerar al final
+      curve: Curves.easeOutQuad,
     ));
 
-    _animationController.forward(); // Inicia la animación
+    _animationController.forward();
   }
 
   @override
   void dispose() {
-    // --> NUEVO: Es crucial limpiar los controladores para evitar fugas de memoria
     _animationController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -77,12 +71,19 @@ class _LoginScreenState extends State<LoginScreen>
             );
           }
           if (state is LoginSuccess) {
+            // ================== CORRECCIÓN CLAVE AQUÍ ==================
+            // Ahora pasamos todos los datos requeridos al HomeDispatcherScreen
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
-                builder: (_) => HomeDispatcherScreen(role: state.role),
+                builder: (_) => HomeDispatcherScreen(
+                  role: state.role,
+                  fullName: state.fullName,
+                  email: state.email,
+                ),
               ),
               (route) => false,
             );
+            // ==========================================================
           }
         },
         child: Stack(
@@ -106,7 +107,6 @@ class _LoginScreenState extends State<LoginScreen>
                 child: Column(
                   children: [
                     _buildHeader(context),
-                    // --> NUEVO: Envolvemos el formulario en el widget de animación
                     SlideTransition(
                       position: _slideAnimation,
                       child: _buildLoginForm(context),

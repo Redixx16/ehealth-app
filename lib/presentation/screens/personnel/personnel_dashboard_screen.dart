@@ -463,9 +463,9 @@ class _DetailedAppointmentCardStatic extends StatelessWidget {
     final initials = _initialsFromName(patientName);
 
     // Placeholders para datos opcionales (estáticos por ahora)
-    final String placeholderAgeGender = '—';
-    final String placeholderReason = 'Sin motivo registrado';
-    final String placeholderPriority = ''; // vacío si no hay prioridad
+    const String placeholderAgeGender = '—';
+    const String placeholderReason = 'Sin motivo registrado';
+    const String placeholderPriority = ''; // vacío si no hay prioridad
 
     return InkWell(
       borderRadius: BorderRadius.circular(14),
@@ -638,8 +638,8 @@ class _DetailedAppointmentCardStatic extends StatelessWidget {
                       decoration: BoxDecoration(
                           color: Colors.red.shade50,
                           borderRadius: BorderRadius.circular(18)),
-                      child: Text(placeholderPriority,
-                          style: const TextStyle(
+                      child: const Text(placeholderPriority,
+                          style: TextStyle(
                               color: Colors.redAccent,
                               fontWeight: FontWeight.w700)),
                     ),

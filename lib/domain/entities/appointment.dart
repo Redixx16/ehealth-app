@@ -6,14 +6,16 @@ class Appointment {
   final DateTime appointmentDate;
   final String status;
   final String? recommendations;
-  final User? patient; // <-- Añade al paciente
+  final User? patient;
+  final User? personnel; // <-- AÑADIDO: Para guardar los datos del doctor
 
   Appointment({
     required this.id,
     required this.appointmentDate,
     required this.status,
     this.recommendations,
-    this.patient, // <-- Añade al constructor
+    this.patient,
+    this.personnel, // <-- AÑADIDO
   });
 
   factory Appointment.fromJson(Map<String, dynamic> json) {
@@ -22,8 +24,10 @@ class Appointment {
       appointmentDate: DateTime.parse(json['appointment_date']),
       status: json['status'],
       recommendations: json['recommendations'],
-      // Parsea el objeto anidado del paciente si existe
       patient: json['patient'] != null ? User.fromJson(json['patient']) : null,
+      // Parsea el objeto anidado del personal si existe
+      personnel:
+          json['personnel'] != null ? User.fromJson(json['personnel']) : null,
     );
   }
 }

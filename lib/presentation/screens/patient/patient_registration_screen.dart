@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Paleta de colores consistente
 const Color kPrimaryColor = Color(0xFFF48FB1);
@@ -73,22 +74,38 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
     }
   }
 
-  void _submitForm() {
+  // ================== CORRECCIÓN CLAVE AQUÍ ==================
+  void _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('user_id');
+
+      if (userId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'Error: No se encontró ID de usuario. Inicia sesión de nuevo.')),
+        );
+        return;
+      }
+
       final newPatient = Patient(
-        id: 0,
+        id: 0, // El ID del perfil lo asigna el backend
+        userId: userId, // Usamos el ID de usuario que guardamos
         fullName: _fullNameController.text.trim(),
         dateOfBirth: _dateOfBirth!,
         nationalId: _nationalIdController.text.trim(),
         address: _addressController.text.trim(),
         phoneNumber: _phoneNumberController.text.trim(),
         lastMenstrualPeriod: _lastMenstrualPeriod!,
-        estimatedDueDate: DateTime.now(),
+        estimatedDueDate: _lastMenstrualPeriod!
+            .add(const Duration(days: 280)), // FPP calculada
         medicalHistory: _medicalHistoryController.text.trim(),
       );
       context.read<PatientBloc>().add(CreatePatient(newPatient));
     }
   }
+  // ==========================================================
 
   @override
   Widget build(BuildContext context) {
@@ -192,7 +209,7 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
           'Necesitamos algunos datos para empezar a cuidarte.',
           style: GoogleFonts.poppins(
             fontSize: 16,
-            color: kTextColor.withOpacity(0.6),
+            color: kTextColor.withAlpha(153), // Corregido
           ),
         ),
       ],
@@ -240,11 +257,12 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
   InputDecoration _buildInputDecoration(
       {required String hintText, required IconData icon}) {
     return InputDecoration(
-      prefixIcon: Icon(icon, color: kPrimaryColor.withOpacity(0.8)),
+      prefixIcon: Icon(icon, color: kPrimaryColor.withAlpha(204)), // Corregido
       hintText: hintText,
-      hintStyle: GoogleFonts.poppins(color: kTextColor.withOpacity(0.6)),
+      hintStyle:
+          GoogleFonts.poppins(color: kTextColor.withAlpha(153)), // Corregido
       filled: true,
-      fillColor: Colors.white.withOpacity(0.8),
+      fillColor: Colors.white.withAlpha(204), // Corregido
       contentPadding:
           const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
       border: OutlineInputBorder(
@@ -262,17 +280,14 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
     return BlocBuilder<PatientBloc, PatientState>(
       builder: (context, state) {
         final isLoading = state is PatientLoading;
-        // CORRECCIÓN: Calculamos el ancho finito del botón
         final screenWidth = MediaQuery.of(context).size.width;
-        final buttonWidth =
-            screenWidth - 48; // Restamos el padding horizontal (24*2)
+        final buttonWidth = screenWidth - 48;
 
         return GestureDetector(
           onTap: isLoading ? null : _submitForm,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             height: 50,
-            // CORRECCIÓN: Usamos el ancho finito en lugar de double.infinity
             width: isLoading ? 50 : buttonWidth,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
@@ -284,7 +299,7 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
               boxShadow: [
                 if (!isLoading)
                   BoxShadow(
-                    color: kPrimaryColor.withOpacity(0.4),
+                    color: kPrimaryColor.withAlpha(102), // Corregido
                     blurRadius: 10,
                     offset: const Offset(0, 5),
                   )

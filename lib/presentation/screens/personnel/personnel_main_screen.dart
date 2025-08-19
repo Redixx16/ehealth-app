@@ -14,7 +14,11 @@ const Color kPersonnelBackgroundColor =
 const Color kPersonnelTextColor = Color(0xFF333333); // Texto oscuro
 
 class PersonnelMainScreen extends StatefulWidget {
-  const PersonnelMainScreen({super.key});
+  final String fullName;
+  final String email;
+
+  const PersonnelMainScreen(
+      {super.key, required this.fullName, required this.email});
 
   @override
   State<PersonnelMainScreen> createState() => _PersonnelMainScreenState();
@@ -70,7 +74,10 @@ class _PersonnelMainScreenState extends State<PersonnelMainScreen> {
           ),
         ),
       ),
-      drawer: const PersonnelDrawer(),
+      drawer: PersonnelDrawer(
+        personnelName: widget.fullName,
+        personnelEmail: widget.email,
+      ),
       body: IndexedStack(
         index: _selectedIndex,
         children: _screens,

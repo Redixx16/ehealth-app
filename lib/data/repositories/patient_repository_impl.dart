@@ -13,6 +13,7 @@ class PatientRepositoryImpl implements PatientRepository {
     // Convertir Patient a PatientModel
     final patientModel = PatientModel(
       id: patient.id,
+      userId: patient.userId, // <-- CORRECCIÓN: Se pasa el userId
       fullName: patient.fullName,
       dateOfBirth: patient.dateOfBirth,
       nationalId: patient.nationalId,
@@ -42,6 +43,7 @@ class PatientRepositoryImpl implements PatientRepository {
     // Convertir Patient a PatientModel
     final patientModel = PatientModel(
       id: patient.id,
+      userId: patient.userId, // <-- CORRECCIÓN: Se pasa el userId
       fullName: patient.fullName,
       dateOfBirth: patient.dateOfBirth,
       nationalId: patient.nationalId,

@@ -13,12 +13,18 @@ class LoginInitial extends LoginState {}
 class LoginLoading extends LoginState {}
 
 class LoginSuccess extends LoginState {
-  final String role; // <-- AÑADE ESTA PROPIEDAD
+  final String role;
+  final String fullName; // <-- AÑADIDO
+  final String email; // <-- AÑADIDO
 
-  const LoginSuccess({required this.role}); // <-- ACTUALIZA EL CONSTRUCTOR
+  const LoginSuccess({
+    required this.role,
+    required this.fullName, // <-- AÑADIDO
+    required this.email, // <-- AÑADIDO
+  });
 
   @override
-  List<Object> get props => [role];
+  List<Object> get props => [role, fullName, email];
 }
 
 class LoginFailure extends LoginState {

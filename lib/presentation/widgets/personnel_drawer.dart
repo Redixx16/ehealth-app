@@ -8,14 +8,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ehealth_app/injection_container.dart' as di;
 
 class PersonnelDrawer extends StatelessWidget {
-  const PersonnelDrawer({super.key});
+  final String personnelName;
+  final String personnelEmail;
+
+  const PersonnelDrawer({
+    super.key,
+    required this.personnelName,
+    required this.personnelEmail,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // Datos de ejemplo, idealmente vendrían del estado de un BLoC de usuario/perfil
-    const String personnelName = 'Dr. Carlos Solís';
-    const String personnelEmail = 'c.solis@minsa.gob.pe';
-
     return Drawer(
       child: Column(
         children: <Widget>[
@@ -32,11 +35,10 @@ class PersonnelDrawer extends StatelessWidget {
   }
 
   Widget _buildDrawerHeader(BuildContext context, String name, String email) {
-    final theme = Theme.of(context); // Usamos el tema del contexto
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 60, 20, 24),
       decoration: BoxDecoration(
-        // Usamos el color primario de TU tema
         color: theme.primaryColor,
       ),
       child: Row(
@@ -77,12 +79,19 @@ class PersonnelDrawer extends StatelessWidget {
           icon: Icons.account_circle_outlined,
           text: 'Mi Perfil',
           onTap: () {
-            Navigator.pop(context);
+            Navigator.pop(context); // Cierra el drawer
+            // ================== CORRECCIÓN CLAVE AQUÍ ==================
+            // Navegamos a la pantalla de perfil pasando los datos
             Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => const PersonnelProfileScreen()),
+                builder: (context) => PersonnelProfileScreen(
+                  fullName: personnelName,
+                  email: personnelEmail,
+                ),
+              ),
             );
+            // ==========================================================
           },
         ),
         _buildDrawerItem(

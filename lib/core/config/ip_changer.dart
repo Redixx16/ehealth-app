@@ -1,11 +1,5 @@
 import 'environment_config.dart';
 
-/// Utilidad para cambiar fácilmente la IP de la API
-///
-/// Uso:
-/// 1. Ejecuta este archivo para ver la configuración actual
-/// 2. Modifica la IP en environment_config.dart según tu red
-/// 3. Reinicia la aplicación
 class IpChanger {
   /// Muestra la configuración actual
   static void showCurrentConfig() {
@@ -14,7 +8,6 @@ class IpChanger {
     print('============================');
   }
 
-  /// Sugiere IPs comunes para diferentes redes
   static void showCommonIPs() {
     print('\n=== IPs COMUNES POR RED ===');
     print('Red WiFi Casa: 192.168.1.X');
@@ -71,8 +64,6 @@ class IpChanger {
   }
 }
 
-/// Función principal para ejecutar desde la línea de comandos
-/// dart run lib/core/config/ip_changer.dart
 void main() {
   IpChanger.runDiagnostics();
 }

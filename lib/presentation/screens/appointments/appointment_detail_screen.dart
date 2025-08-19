@@ -48,7 +48,7 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
         });
       }
     } catch (e) {
-      // En un futuro, aquí iría un logger.
+      // Manejo de errores
     }
   }
 
@@ -85,8 +85,7 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
         body: BlocListener<DeleteAppointmentBloc, DeleteAppointmentState>(
           listener: (context, state) {
             if (state is DeleteAppointmentSuccess) {
-              Navigator.of(context)
-                  .pop(true); // Devuelve 'true' para indicar éxito
+              Navigator.of(context).pop(true);
             }
             if (state is DeleteAppointmentFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -100,6 +99,8 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildInfoCard(context),
+                const SizedBox(height: 20),
+                _buildPersonnelCard(context),
                 const SizedBox(height: 20),
                 _buildRecommendationsCard(context),
               ],
@@ -157,6 +158,24 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
               subtitleWidget: _StatusChip(status: _currentAppointment.status),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPersonnelCard(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      elevation: 2,
+      shadowColor: theme.primaryColor.withOpacity(0.1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: _DetailInfoRow(
+          icon: Icons.medical_services_outlined,
+          title: 'Personal a Cargo',
+          subtitle: _currentAppointment.personnel?.fullName ??
+              'No hay personal asignado',
         ),
       ),
     );

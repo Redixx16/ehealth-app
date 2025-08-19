@@ -43,7 +43,7 @@ class CustomFloatingNavBar extends StatelessWidget {
 
     const double ctaDiameter = 64.0;
     const double navHeight = 64.0;
-    final double containerHeight = navHeight + 16.0;
+    const double containerHeight = navHeight + 16.0;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
@@ -74,7 +74,7 @@ class CustomFloatingNavBar extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(child: Row(children: leftWidgets)),
-                  SizedBox(width: ctaDiameter * 0.95),
+                  const SizedBox(width: ctaDiameter * 0.95),
                   Expanded(child: Row(children: rightWidgets)),
                 ],
               ),

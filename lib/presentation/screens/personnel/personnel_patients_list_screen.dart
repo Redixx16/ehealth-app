@@ -65,18 +65,25 @@ class _PersonnelPatientsListScreenState
     });
   }
 
+  // ================== LÓGICA DE FILTRADO CORREGIDA Y COMPLETA ==================
   bool _matchesActiveFilter(Patient p) {
-    if (_activeFilter == 'Todos') return true;
-    if (_activeFilter == 'Embarazadas') {
-      // Si no tienes ese campo, asumimos embarazo si estimatedDueDate != null
-      return p.estimatedDueDate != null;
+    switch (_activeFilter) {
+      case 'Todos':
+        return true;
+      case 'Embarazadas':
+        return p.estimatedDueDate != null;
+      case 'Alto riesgo':
+        return p.riskLevel == RiskLevel.alto;
+      case 'Recientes':
+        if (p.createdAt == null) return false;
+        // Considera "reciente" si fue creada en los últimos 7 días
+        return p.createdAt!
+            .isAfter(DateTime.now().subtract(const Duration(days: 7)));
+      default:
+        return true;
     }
-    if (_activeFilter == 'Alto riesgo') {
-      // Placeholder: podrías tener p.riskLevel
-      return false;
-    }
-    return true;
   }
+  // =========================================================================
 
   void _setFilter(String filter) {
     if (_activeFilter == filter) return;
@@ -190,7 +197,7 @@ class _PersonnelPatientsListScreenState
             ),
           ),
           const SizedBox(height: 10),
-          // Filtros rápidos (chips)
+          // ================== FILTROS RESTAURADOS ==================
           SizedBox(
             height: 38,
             child: ListView(
@@ -212,6 +219,7 @@ class _PersonnelPatientsListScreenState
               ],
             ),
           ),
+          // =========================================================
         ],
       ),
     );
@@ -338,14 +346,14 @@ class _PatientCardRich extends StatelessWidget {
     }
   }
 
-  Color _riskColor(String risk) {
-    switch (risk.toLowerCase()) {
-      case 'alto':
-        return Colors.red.shade700;
-      case 'medio':
-        return Colors.orange.shade800;
+  Map<String, dynamic> _getRiskDetails(RiskLevel risk) {
+    switch (risk) {
+      case RiskLevel.alto:
+        return {'text': 'Alto', 'color': Colors.red.shade700};
+      case RiskLevel.medio:
+        return {'text': 'Medio', 'color': Colors.orange.shade800};
       default:
-        return Colors.green.shade700;
+        return {'text': 'Bajo', 'color': Colors.green.shade700};
     }
   }
 
@@ -355,9 +363,9 @@ class _PatientCardRich extends StatelessWidget {
     final weeks = _weeksOfGestation();
     final hasPregnancy = patient.estimatedDueDate != null || weeks != null;
 
-    // Placeholder risk (puedes mapear de patient.riskLevel si existe)
-    final riskLevel = 'Bajo';
-    final riskColor = _riskColor(riskLevel);
+    final riskDetails = _getRiskDetails(patient.riskLevel);
+    final riskColor = riskDetails['color'] as Color;
+    final riskText = riskDetails['text'] as String;
 
     return Dismissible(
       key: ValueKey(patient.hashCode),
@@ -412,7 +420,7 @@ class _PatientCardRich extends StatelessWidget {
                       right: -2,
                       bottom: -2,
                       child: Container(
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                             color: Colors.white, shape: BoxShape.circle),
                         padding: const EdgeInsets.all(3),
                         child: Container(
@@ -457,7 +465,7 @@ class _PatientCardRich extends StatelessWidget {
                             decoration: BoxDecoration(
                                 color: riskColor.withOpacity(0.12),
                                 borderRadius: BorderRadius.circular(10)),
-                            child: Text('Riesgo: $riskLevel',
+                            child: Text('Riesgo: $riskText',
                                 style: GoogleFonts.poppins(
                                     fontSize: 12,
                                     color: riskColor,
@@ -481,7 +489,7 @@ class _PatientCardRich extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      // Row con datos clínicos resumidos — ahora con Flexible para evitar overflow
+                      // Row con datos clínicos resumidos
                       Row(
                         children: [
                           if (hasPregnancy) ...[
@@ -501,18 +509,6 @@ class _PatientCardRich extends StatelessWidget {
                             ),
                             const SizedBox(width: 10),
                           ],
-                          Icon(Icons.calendar_today_outlined,
-                              size: 14, color: Colors.grey.shade500),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              'FPP: ${patient.estimatedDueDate != null ? _formatDate(patient.estimatedDueDate) : "-"}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.poppins(
-                                  fontSize: 13, color: Colors.grey.shade700),
-                            ),
-                          ),
                         ],
                       ),
                     ],

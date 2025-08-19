@@ -2,14 +2,21 @@
 import 'package:ehealth_app/presentation/bloc/patient/patient_bloc.dart';
 import 'package:ehealth_app/presentation/screens/patient/patient_registration_screen.dart';
 import 'package:ehealth_app/presentation/screens/patient/patient_main_screen.dart';
-// <-- IMPORTA LA NUEVA VISTA PRINCIPAL DEL PERSONAL
 import 'package:ehealth_app/presentation/screens/personnel/personnel_main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomeDispatcherScreen extends StatefulWidget {
   final String role;
-  const HomeDispatcherScreen({super.key, required this.role});
+  final String fullName; // <-- AÑADIDO
+  final String email; // <-- AÑADIDO
+
+  const HomeDispatcherScreen({
+    super.key,
+    required this.role,
+    required this.fullName, // <-- AÑADIDO
+    required this.email, // <-- AÑADIDO
+  });
 
   @override
   State<HomeDispatcherScreen> createState() => _HomeDispatcherScreenState();
@@ -24,9 +31,13 @@ class _HomeDispatcherScreenState extends State<HomeDispatcherScreen> {
       context.read<PatientBloc>().add(GetPatient());
     } else if (widget.role == 'personal_salud') {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // <-- ACTUALIZA ESTA LÍNEA PARA NAVEGAR A LA NUEVA PANTALLA
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const PersonnelMainScreen()),
+          MaterialPageRoute(
+              builder: (_) => PersonnelMainScreen(
+                    // <-- PASAMOS LOS DATOS
+                    fullName: widget.fullName,
+                    email: widget.email,
+                  )),
         );
       });
     } else {
