@@ -1,8 +1,9 @@
 // lib/presentation/screens/personnel/personnel_profile_screen.dart
+import 'package:ehealth_app/presentation/screens/personnel/personnel_home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Paleta de colores para la vista del personal
+// Paleta de colores consistente
 const Color kPersonnelPrimaryColor = Color(0xFF0D47A1);
 const Color kPersonnelBackgroundColor = Color(0xFFF5F7FA);
 
@@ -11,107 +12,45 @@ class PersonnelProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Datos de ejemplo para el perfil
+    // Datos de ejemplo
     const String personnelName = 'Dr. Carlos Solís';
+    const String personnelSpecialty = 'Ginecólogo Obstetra';
     const String personnelEmail = 'c.solis@minsa.gob.pe';
-    const String personnelId = 'CMP: 78945';
+    const String personnelPhone = '+51 987 654 321';
 
     return Scaffold(
       backgroundColor: kPersonnelBackgroundColor,
-      // Usamos un GlobalKey para poder abrir el Drawer desde el AppBar
-      key: GlobalKey<ScaffoldState>(),
       appBar: AppBar(
-        backgroundColor: kPersonnelBackgroundColor,
-        elevation: 0,
-        // Botón para abrir el Drawer
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu, color: Colors.black54),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
+        title: Text('Mi Perfil',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        // El botón de retroceso es manejado automáticamente por la navegación
       ),
-      // El Drawer es el menú lateral deslizable
-      drawer: _buildDrawer(context, personnelName, personnelEmail),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          children: [
-            _buildProfileHeader(personnelName, personnelId),
-            const SizedBox(height: 24),
-            _buildInfoCard(),
-            const SizedBox(height: 16),
-            _buildActionsCard(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Widget para el menú lateral
-  Widget _buildDrawer(BuildContext context, String name, String email) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          UserAccountsDrawerHeader(
-            accountName: Text(name,
-                style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-            accountEmail: Text(email, style: GoogleFonts.poppins()),
-            currentAccountPicture: const CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Icon(Icons.local_hospital,
-                  color: kPersonnelPrimaryColor, size: 40),
-            ),
-            decoration: const BoxDecoration(
-              color: kPersonnelPrimaryColor,
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.settings_outlined),
-            title: const Text('Configuración de la cuenta'),
-            onTap: () {
-              Navigator.pop(context);
-              // Futuro: Navegar a la pantalla de configuración
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.bar_chart_outlined),
-            title: const Text('Generar Reportes'),
-            onTap: () {
-              Navigator.pop(context);
-              // Futuro: Navegar a la pantalla de reportes
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.help_outline),
-            title: const Text('Ayuda y Soporte'),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Cerrar Sesión',
-                style: TextStyle(color: Colors.red)),
-            onTap: () {
-              // Lógica para cerrar sesión
-            },
-          ),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 20.0),
+        children: <Widget>[
+          _buildProfileHeader(personnelName, personnelSpecialty),
+          const SizedBox(height: 30),
+          _buildInfoSection(personnelEmail, personnelPhone),
+          const SizedBox(height: 20),
+          _buildMenuItems(context),
         ],
       ),
     );
   }
 
-  // Widget para la cabecera del perfil
-  Widget _buildProfileHeader(String name, String id) {
+  Widget _buildProfileHeader(String name, String specialty) {
     return Column(
       children: [
         const CircleAvatar(
           radius: 50,
           backgroundColor: kPersonnelPrimaryColor,
-          child: Icon(Icons.local_hospital, size: 60, color: Colors.white),
+          child: Icon(
+            Icons.local_hospital_outlined,
+            size: 50,
+            color: Colors.white,
+          ),
         ),
         const SizedBox(height: 16),
         Text(
@@ -122,8 +61,9 @@ class PersonnelProfileScreen extends StatelessWidget {
             color: Colors.black87,
           ),
         ),
+        const SizedBox(height: 4),
         Text(
-          id,
+          specialty,
           style: GoogleFonts.poppins(
             fontSize: 16,
             color: Colors.grey.shade600,
@@ -133,86 +73,120 @@ class PersonnelProfileScreen extends StatelessWidget {
     );
   }
 
-  // Widget para la tarjeta de información de contacto
-  Widget _buildInfoCard() {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 1,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            _buildInfoRow(Icons.phone_outlined, 'Teléfono', '+51 987 654 321'),
-            const Divider(height: 24),
-            _buildInfoRow(Icons.location_on_outlined, 'Posta Médica',
-                'Bambamarca Centro'),
-            const Divider(height: 24),
-            _buildInfoRow(Icons.work_outline, 'Especialidad', 'Obstetricia'),
-          ],
-        ),
+  Widget _buildInfoSection(String email, String phone) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Información de Contacto",
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          const Divider(height: 24),
+          _buildContactInfoRow(Icons.email_outlined, email),
+          const SizedBox(height: 16),
+          _buildContactInfoRow(Icons.phone_outlined, phone),
+        ],
       ),
     );
   }
 
-  // Widget para la tarjeta de acciones rápidas
-  Widget _buildActionsCard(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 1,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Acciones',
-              style: GoogleFonts.poppins(
-                  fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.edit_outlined,
-                  color: kPersonnelPrimaryColor),
-              title: const Text('Editar mi información'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {},
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.lock_reset_outlined,
-                  color: kPersonnelPrimaryColor),
-              title: const Text('Cambiar contraseña'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {},
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, String title, String subtitle) {
+  Widget _buildContactInfoRow(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, color: Colors.grey.shade500, size: 20),
+        Icon(icon, color: kPersonnelAccentColor, size: 20),
         const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: GoogleFonts.poppins(color: Colors.grey.shade700),
-            ),
-            Text(
-              subtitle,
-              style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 15,
-                  color: Colors.black87),
-            ),
-          ],
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.poppins(fontSize: 15, color: Colors.black87),
+          ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildMenuItems(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          _buildMenuItem(
+            context,
+            icon: Icons.edit_outlined,
+            text: 'Editar Perfil',
+            onTap: () {
+              // Lógica para editar el perfil
+            },
+          ),
+          _buildMenuItem(
+            context,
+            icon: Icons.lock_outline,
+            text: 'Cambiar Contraseña',
+            onTap: () {
+              // Lógica para cambiar contraseña
+            },
+          ),
+          _buildMenuItem(
+            context,
+            icon: Icons.notifications_outlined,
+            text: 'Configurar Notificaciones',
+            onTap: () {
+              // Lógica para la configuración de notificaciones
+            },
+            showDivider: false,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuItem(BuildContext context,
+      {required IconData icon,
+      required String text,
+      required VoidCallback onTap,
+      bool showDivider = true}) {
+    return Column(
+      children: [
+        ListTile(
+          leading: Icon(icon, color: Colors.grey.shade700),
+          title: Text(text,
+              style: GoogleFonts.poppins(
+                  fontSize: 15, fontWeight: FontWeight.w500)),
+          trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+          onTap: onTap,
+        ),
+        if (showDivider)
+          const Divider(
+            height: 1,
+            indent: 16,
+            endIndent: 16,
+          ),
       ],
     );
   }

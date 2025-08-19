@@ -1,3 +1,4 @@
+// lib/presentation/screens/personnel/personnel_patients_list_screen.dart
 import 'package:ehealth_app/domain/entities/patient.dart';
 import 'package:ehealth_app/presentation/bloc/patient/patient_bloc.dart';
 import 'package:flutter/material.dart';
@@ -5,7 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-// Paleta de colores
+// Paleta de colores consistente
 const Color kPersonnelPrimaryColor = Color(0xFF0D47A1);
 const Color kPersonnelBackgroundColor = Color(0xFFF5F7FA);
 
@@ -19,7 +20,6 @@ class PersonnelPatientsListScreen extends StatefulWidget {
 
 class _PersonnelPatientsListScreenState
     extends State<PersonnelPatientsListScreen> {
-  // Ahora usaremos la lista real que viene del BLoC
   List<Patient> _allPatients = [];
   List<Patient> _filteredPatients = [];
   final TextEditingController _searchController = TextEditingController();
@@ -27,7 +27,6 @@ class _PersonnelPatientsListScreenState
   @override
   void initState() {
     super.initState();
-    // Pedimos la lista de pacientes al BLoC
     context.read<PatientBloc>().add(GetAllPatients());
     _searchController.addListener(_filterPatients);
   }
@@ -52,29 +51,18 @@ class _PersonnelPatientsListScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kPersonnelBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
-        title: Text(
-          'Mis Pacientes',
-          style: GoogleFonts.poppins(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
+      // El AppBar ahora es manejado por PersonnelMainScreen para consistencia
       body: Column(
         children: [
           _buildSearchBar(),
           Expanded(
             child: BlocConsumer<PatientBloc, PatientState>(
               listener: (context, state) {
-                // Cuando los pacientes se cargan, actualizamos nuestras listas locales
                 if (state is AllPatientsLoaded) {
                   setState(() {
                     _allPatients = state.patients;
                     _filteredPatients = state.patients;
-                    _filterPatients(); // Aplicar filtro inicial si hay txt
+                    _filterPatients();
                   });
                 }
               },
@@ -112,7 +100,7 @@ class _PersonnelPatientsListScreenState
   Widget _buildSearchBar() {
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
@@ -133,11 +121,10 @@ class _PersonnelPatientsListScreenState
 }
 
 class _PatientInfoCard extends StatelessWidget {
-  final Patient patient; // Ahora usamos el modelo real
+  final Patient patient;
   const _PatientInfoCard({required this.patient});
 
-  //  puede venir de la API en el futuro
-  String get riskLevel => 'Bajo';
+  String get riskLevel => 'Bajo'; // Esto puede venir de la API en el futuro
   Color _getRiskColor() {
     switch (riskLevel.toLowerCase()) {
       case 'alto':
@@ -149,7 +136,6 @@ class _PatientInfoCard extends StatelessWidget {
     }
   }
 
-  // Calcular semanas de gestación a partir de la FUR
   int get weeksOfGestation {
     final now = DateTime.now();
     final difference = now.difference(patient.lastMenstrualPeriod);
@@ -165,7 +151,9 @@ class _PatientInfoCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () {},
+        onTap: () {
+          // Navegar al detalle del paciente
+        },
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
