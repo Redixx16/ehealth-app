@@ -1,16 +1,26 @@
-// lib/presentation/widgets/custom_floating_nav_bar.dart
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+// Clase auxiliar para cada item
+class CustomNavBarItem {
+  final IconData icon;
+  final String label;
+
+  CustomNavBarItem({required this.icon, required this.label});
+}
 
 class CustomFloatingNavBar extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onItemTapped;
   final VoidCallback onCtaTapped;
+  final List<CustomNavBarItem> items;
 
   const CustomFloatingNavBar({
     super.key,
     required this.selectedIndex,
     required this.onItemTapped,
     required this.onCtaTapped,
+    required this.items,
   });
 
   @override
@@ -18,90 +28,130 @@ class CustomFloatingNavBar extends StatelessWidget {
     final theme = Theme.of(context);
     final safeAreaBottom = MediaQuery.of(context).padding.bottom;
 
-    return Stack(
-      alignment: Alignment.bottomCenter,
-      children: [
-        // Contenedor principal de la barra de navegación
-        Container(
-          height: 65 + safeAreaBottom,
-          margin: EdgeInsets.fromLTRB(24, 0, 24, safeAreaBottom > 0 ? 0 : 24),
-          padding: EdgeInsets.only(bottom: safeAreaBottom),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(32.5),
-            boxShadow: [
-              BoxShadow(
-                color: theme.primaryColor.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(context, Icons.home_filled, 'Inicio', 0),
-              _buildNavItem(context, Icons.calendar_month, 'Citas', 1),
-              const SizedBox(width: 56), // Espacio para el botón central
-              _buildNavItem(context, Icons.school, 'Educación', 2),
-              _buildNavItem(context, Icons.person, 'Perfil', 3),
-            ],
-          ),
-        ),
-        // Botón de acción central (CTA)
-        Positioned(
-          bottom: (safeAreaBottom > 0 ? safeAreaBottom - 10 : 14),
-          child: GestureDetector(
-            onTap: onCtaTapped,
+    final int leftCount = items.length ~/ 2;
+    final int rightCount = items.length - leftCount;
+
+    final List<Widget> leftWidgets = List.generate(leftCount, (i) {
+      final int idx = i;
+      return _buildNavItem(context, items[idx], idx);
+    });
+
+    final List<Widget> rightWidgets = List.generate(rightCount, (i) {
+      final int idx = i + leftCount;
+      return _buildNavItem(context, items[idx], idx);
+    });
+
+    const double ctaDiameter = 64.0;
+    const double navHeight = 64.0;
+    final double containerHeight = navHeight + 16.0;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      height: containerHeight,
+      child: Stack(
+        alignment: Alignment.topCenter,
+        children: [
+          // Barra de navegación
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
             child: Container(
-              width: 60,
-              height: 60,
+              height: navHeight,
+              padding: EdgeInsets.only(
+                  bottom: safeAreaBottom > 0 ? safeAreaBottom : 0),
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [theme.primaryColor, theme.colorScheme.secondary],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(navHeight / 2),
                 boxShadow: [
                   BoxShadow(
-                    color: theme.primaryColor.withOpacity(0.4),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
-              child: const Icon(Icons.favorite_border,
-                  color: Colors.white, size: 30),
+              child: Row(
+                children: [
+                  Expanded(child: Row(children: leftWidgets)),
+                  SizedBox(width: ctaDiameter * 0.95),
+                  Expanded(child: Row(children: rightWidgets)),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+          // Botón central (corazón rosado con brillo ✨)
+          Positioned(
+            top: 0,
+            child: GestureDetector(
+              onTap: onCtaTapped,
+              child: Container(
+                width: ctaDiameter,
+                height: ctaDiameter,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFFFF80AB),
+                      Color(0xFFF50057)
+                    ], // rosa claro → rosa fuerte
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.pinkAccent.withOpacity(0.6),
+                      blurRadius: 20,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 6),
+                    ),
+                    // Un brillo extra como halo
+                    BoxShadow(
+                      color: Colors.pinkAccent.withOpacity(0.3),
+                      blurRadius: 40,
+                      spreadRadius: 10,
+                      offset: const Offset(0, 0),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.favorite, // corazón ♥
+                  color: Colors.white,
+                  size: 32,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildNavItem(
-      BuildContext context, IconData icon, String label, int index) {
+  Widget _buildNavItem(BuildContext context, CustomNavBarItem item, int index) {
     final bool isSelected = selectedIndex == index;
     final theme = Theme.of(context);
     final color = isSelected ? theme.primaryColor : Colors.grey.shade400;
 
-    return GestureDetector(
-      onTap: () => onItemTapped(index),
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: color, size: 26),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: color,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
-          )
-        ],
+    return Expanded(
+      child: InkWell(
+        onTap: () => onItemTapped(index),
+        borderRadius: BorderRadius.circular(8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(item.icon, color: color, size: 22),
+            const SizedBox(height: 4),
+            Text(
+              item.label,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 10,
+                color: color,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
