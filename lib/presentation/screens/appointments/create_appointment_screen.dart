@@ -116,7 +116,7 @@ class _CreateAppointmentViewState extends State<_CreateAppointmentView> {
                     builder: (context, state) {
                       if (state is AllPatientsLoaded) {
                         return DropdownButtonFormField<Patient>(
-                          value: _selectedPatient,
+                          initialValue: _selectedPatient,
                           onChanged: (Patient? newValue) {
                             setState(() {
                               _selectedPatient = newValue;

@@ -337,7 +337,6 @@ class _PatientCardRich extends StatelessWidget {
   // Computa semanas de gestación si lastMenstrualPeriod está disponible
   int? _weeksOfGestation() {
     try {
-      if (patient.lastMenstrualPeriod == null) return null;
       final now = DateTime.now();
       final diff = now.difference(patient.lastMenstrualPeriod);
       return (diff.inDays / 7).floor();

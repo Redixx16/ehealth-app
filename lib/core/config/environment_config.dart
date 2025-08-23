@@ -10,7 +10,8 @@ class EnvironmentConfig {
 
   // Configuraciones por entorno
   static const Map<Environment, String> _baseUrls = {
-    Environment.development: 'http://192.168.1.68:3000', // Tu IP de desarrollo
+    Environment.development:
+        'http://10.253.106.109:3000', // Tu IP de desarrollo
     Environment.staging:
         'http://192.168.1.100:3000', // IP de staging (cambiar según necesites)
     Environment.production: 'https://api.tudominio.com', // URL de producción

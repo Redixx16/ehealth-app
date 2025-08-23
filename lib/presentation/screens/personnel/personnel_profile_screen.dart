@@ -284,7 +284,7 @@ class _PersonnelProfileScreenState extends State<PersonnelProfileScreen> {
               IconButton(
                 tooltip: 'Editar',
                 onPressed: () {},
-                icon: Icon(Icons.edit_outlined, color: kPrimary),
+                icon: const Icon(Icons.edit_outlined, color: kPrimary),
               ),
               IconButton(
                 tooltip: 'Más',
