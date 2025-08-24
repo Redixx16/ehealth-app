@@ -35,6 +35,7 @@ class ApiConfig {
   static String get registerUrl => getAuthUrl('/register');
   static String get allPatientsUrl => getPatientsUrl('');
   static String get patientMeUrl => getPatientsUrl('/me');
+  static String get registerPatientUrl => getPatientsUrl('/register-patient');
   static String get appointmentsUrl => getAppointmentsUrl('');
   static String get achievementsUrl => getGamificationUrl('/achievements');
   static String get userProgressUrl => getGamificationUrl('/user-progress/me');

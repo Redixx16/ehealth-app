@@ -7,4 +7,7 @@ abstract class PatientRepository {
   Future<Patient> getPatient();
   Future<Patient> updatePatient(Patient patient);
   Future<void> deletePatient();
+  // ================== NUEVO MÉTODO ==================
+  Future<Patient> registerPatient(Patient patient, String email);
+  // =================================================
 }

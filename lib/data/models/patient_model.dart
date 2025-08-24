@@ -66,4 +66,19 @@ class PatientModel extends Patient {
       'medicalHistory': medicalHistory,
     };
   }
+
+  // ================== NUEVO MÉTODO ==================
+  Map<String, dynamic> toJsonForRegistration({required String email}) {
+    return {
+      'email': email,
+      'fullName': fullName,
+      'dateOfBirth': dateOfBirth.toIso8601String(),
+      'nationalId': nationalId,
+      'address': address,
+      'phoneNumber': phoneNumber,
+      'lastMenstrualPeriod': lastMenstrualPeriod.toIso8601String(),
+      'medicalHistory': medicalHistory,
+    };
+  }
+  // =================================================
 }

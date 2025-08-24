@@ -52,4 +52,15 @@ class PatientRemoteDataSourceImpl implements PatientRemoteDataSource {
   Future<void> deletePatient() async {
     await apiClient.delete(ApiConfig.patientMeUrl);
   }
+
+  // ================== NUEVO MÉTODO ==================
+  @override
+  Future<PatientModel> registerPatient(PatientModel patient, String email) async {
+    final response = await apiClient.post(
+      ApiConfig.registerPatientUrl,
+      body: patient.toJsonForRegistration(email: email),
+    );
+    return PatientModel.fromJson(response);
+  }
+  // =================================================
 }

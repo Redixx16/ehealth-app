@@ -9,6 +9,8 @@ import 'package:ehealth_app/core/api/api_client.dart';
 // UseCases
 import 'package:ehealth_app/domain/usecases/create_patient.dart';
 import 'package:ehealth_app/domain/usecases/get_patient.dart';
+import 'package:ehealth_app/domain/usecases/get_patients.dart';
+import 'package:ehealth_app/domain/usecases/register_patient.dart';
 import 'package:ehealth_app/domain/usecases/appointments/create_appointment.dart';
 import 'package:ehealth_app/domain/usecases/appointments/delete_appointment.dart';
 import 'package:ehealth_app/domain/usecases/appointments/get_appointments.dart';
@@ -64,6 +66,7 @@ Future<void> setupLocator() async {
   locator.registerLazySingleton(() => GetPatientUseCase(locator()));
   locator.registerLazySingleton(() => GetPatientsUseCase(locator()));
   locator.registerLazySingleton(() => CreatePatientUseCase(locator()));
+  locator.registerLazySingleton(() => RegisterPatientUseCase(locator()));
   locator.registerLazySingleton(() => GetAppointmentsUseCase(locator()));
   locator.registerLazySingleton(() => CreateAppointmentUseCase(locator()));
   locator.registerLazySingleton(() => UpdateAppointmentUseCase(locator()));
@@ -88,6 +91,9 @@ Future<void> setupLocator() async {
         getPatientUseCase: locator(),
         createPatientUseCase: locator(),
         getPatientsUseCase: locator(),
+        // ================== NUEVO PARÁMETRO ==================
+        registerPatientUseCase: locator(),
+        // =================================================
       ));
   locator.registerFactory(() => GamificationBloc(
         getUserProgressUseCase: locator(),

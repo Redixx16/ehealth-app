@@ -7,4 +7,7 @@ abstract class PatientRemoteDataSource {
   Future<PatientModel> getPatient();
   Future<PatientModel> updatePatient(PatientModel patient);
   Future<void> deletePatient();
+  // ================== NUEVO MÉTODO ==================
+  Future<PatientModel> registerPatient(PatientModel patient, String email);
+  // =================================================
 }

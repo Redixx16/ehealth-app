@@ -62,4 +62,26 @@ class PatientRepositoryImpl implements PatientRepository {
   Future<void> deletePatient() async {
     return await remoteDataSource.deletePatient();
   }
+
+  // ================== NUEVO MÉTODO ==================
+  @override
+  Future<Patient> registerPatient(Patient patient, String email) async {
+    // Convertir Patient a PatientModel
+    final patientModel = PatientModel(
+      id: patient.id,
+      userId: patient.userId,
+      fullName: patient.fullName,
+      dateOfBirth: patient.dateOfBirth,
+      nationalId: patient.nationalId,
+      address: patient.address,
+      phoneNumber: patient.phoneNumber,
+      lastMenstrualPeriod: patient.lastMenstrualPeriod,
+      estimatedDueDate: patient.estimatedDueDate,
+      medicalHistory: patient.medicalHistory,
+    );
+
+    final registeredPatient = await remoteDataSource.registerPatient(patientModel, email);
+    return registeredPatient;
+  }
+  // =================================================
 }

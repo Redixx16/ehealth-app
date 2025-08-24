@@ -7,6 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+// ================== CAMBIO CLAVE ==================
+import 'register_patient_screen.dart';
+// =================================================
 
 // Paleta de colores consistente
 const Color kPersonnelPrimaryColor = Color(0xFF0D47A1);
@@ -134,8 +137,11 @@ class _PersonnelPatientsListScreenState
           // Acción rápida: añadir paciente (UI-only)
           InkWell(
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Crear paciente (UI)')));
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const RegisterPatientScreen(),
+                ),
+              );
             },
             borderRadius: BorderRadius.circular(12),
             child: Container(

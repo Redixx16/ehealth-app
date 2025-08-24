@@ -9,6 +9,8 @@ abstract class PatientEvent extends Equatable {
 
 class GetAllPatients extends PatientEvent {}
 
+class GetPatient extends PatientEvent {}
+
 class CreatePatient extends PatientEvent {
   final Patient patient;
 
@@ -18,4 +20,38 @@ class CreatePatient extends PatientEvent {
   List<Object> get props => [patient];
 }
 
-class GetPatient extends PatientEvent {}
+// ================== NUEVO EVENTO ==================
+class RegisterPatient extends PatientEvent {
+  final String fullName;
+  final String email;
+  final String nationalId;
+  final DateTime dateOfBirth;
+  final String address;
+  final String phoneNumber;
+  final DateTime lastMenstrualPeriod;
+  final String medicalHistory;
+
+  const RegisterPatient({
+    required this.fullName,
+    required this.email,
+    required this.nationalId,
+    required this.dateOfBirth,
+    required this.address,
+    required this.phoneNumber,
+    required this.lastMenstrualPeriod,
+    required this.medicalHistory,
+  });
+
+  @override
+  List<Object> get props => [
+        fullName,
+        email,
+        nationalId,
+        dateOfBirth,
+        address,
+        phoneNumber,
+        lastMenstrualPeriod,
+        medicalHistory,
+      ];
+}
+// =================================================

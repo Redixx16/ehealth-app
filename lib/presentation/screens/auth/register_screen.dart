@@ -26,7 +26,10 @@ class _RegisterScreenState extends State<RegisterScreen>
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _fullNameController = TextEditingController();
-  String _role = 'gestante';
+  // ================== CAMBIO CLAVE ==================
+  // Eliminamos la variable _role ya que no se puede seleccionar
+  // String _role = 'gestante';
+  // =================================================
   bool _isPasswordVisible = false;
 
   // Controlador y variables para la animación escalonada
@@ -102,7 +105,7 @@ class _RegisterScreenState extends State<RegisterScreen>
         RegisterSubmitted(
           email: _emailController.text.trim(),
           password: _passwordController.text,
-          role: _role,
+          role: 'personal_salud', // Forzar el rol a personal_salud
           fullName: _fullNameController.text.trim(),
         ),
       );
@@ -182,7 +185,9 @@ class _RegisterScreenState extends State<RegisterScreen>
         ),
         const SizedBox(height: 8),
         Text(
-          'Es rápido y fácil.',
+          // ================== CAMBIO CLAVE ==================
+          'Solo para personal de salud.',
+          // =================================================
           style: GoogleFonts.poppins(
             fontSize: 16,
             color: kTextColor.withOpacity(0.6),
@@ -277,22 +282,23 @@ class _RegisterScreenState extends State<RegisterScreen>
             ),
           ),
           const SizedBox(height: 16),
-          _buildAnimatedFormField(
-            animationIndex: 4,
-            child: DropdownButtonFormField<String>(
-              initialValue: _role,
-              decoration: _buildInputDecoration(
-                hintText: 'Soy...',
-                icon: Icons.people_outline,
-              ),
-              items: const [
-                DropdownMenuItem(value: 'gestante', child: Text('Gestante')),
-                DropdownMenuItem(
-                    value: 'personal_salud', child: Text('Personal de salud')),
-              ],
-              onChanged: (value) => setState(() => _role = value!),
-            ),
-          ),
+          // Eliminamos el DropdownButtonFormField para el rol
+          // _buildAnimatedFormField(
+          //   animationIndex: 4,
+          //   child: DropdownButtonFormField<String>(
+          //     initialValue: _role,
+          //     decoration: _buildInputDecoration(
+          //       hintText: 'Soy...',
+          //       icon: Icons.people_outline,
+          //     ),
+          //     items: const [
+          //       DropdownMenuItem(value: 'gestante', child: Text('Gestante')),
+          //       DropdownMenuItem(
+          //           value: 'personal_salud', child: Text('Personal de salud')),
+          //     ],
+          //     onChanged: (value) => setState(() => _role = value!),
+          //   ),
+          // ),
           const SizedBox(height: 32),
           _buildRegisterButton(context, state),
         ],

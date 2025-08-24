@@ -5,6 +5,9 @@ import 'package:ehealth_app/domain/entities/patient.dart';
 import 'package:ehealth_app/domain/usecases/create_patient.dart'; // <-- NUEVO
 import 'package:ehealth_app/domain/usecases/get_patient.dart';
 import 'package:ehealth_app/domain/usecases/get_patients.dart';
+// ================== NUEVO IMPORT ==================
+import 'package:ehealth_app/domain/usecases/register_patient.dart';
+// =================================================
 import 'package:equatable/equatable.dart';
 
 part 'patient_event.dart';
@@ -15,11 +18,17 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
   final GetPatientUseCase getPatientUseCase;
   final CreatePatientUseCase createPatientUseCase;
   final GetPatientsUseCase getPatientsUseCase; // <-- AÑADE LA DEPENDENCIA
+  // ================== NUEVA DEPENDENCIA ==================
+  final RegisterPatientUseCase registerPatientUseCase;
+  // =================================================
 
   PatientBloc({
     required this.getPatientUseCase,
     required this.createPatientUseCase, // <-- NUEVO
     required this.getPatientsUseCase,
+    // ================== NUEVO PARÁMETRO ==================
+    required this.registerPatientUseCase,
+    // =================================================
   }) : super(PatientInitial()) {
     on<GetAllPatients>((event, emit) async {
       emit(PatientLoading());
@@ -53,5 +62,26 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
         emit(PatientError(e.toString()));
       }
     });
+
+    // ================== NUEVO MANEJADOR ==================
+    on<RegisterPatient>((event, emit) async {
+      emit(PatientLoading());
+      try {
+        final patient = await registerPatientUseCase.execute(
+          fullName: event.fullName,
+          email: event.email,
+          nationalId: event.nationalId,
+          dateOfBirth: event.dateOfBirth,
+          address: event.address,
+          phoneNumber: event.phoneNumber,
+          lastMenstrualPeriod: event.lastMenstrualPeriod,
+          medicalHistory: event.medicalHistory,
+        );
+        emit(PatientLoaded(patient));
+      } catch (e) {
+        emit(PatientError(e.toString()));
+      }
+    });
+    // =================================================
   }
 }
