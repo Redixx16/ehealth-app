@@ -1,11 +1,9 @@
-// lib/presentation/screens/personnel/register_patient_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:ehealth_app/injection_container.dart' as di;
 import '../../bloc/patient/patient_bloc.dart';
-import '../../../domain/entities/patient.dart';
 
 // Paleta de colores consistente con el personal de salud
 const Color kPersonnelPrimaryColor = Color(0xFF0D47A1);
@@ -27,7 +25,7 @@ class _RegisterPatientScreenState extends State<RegisterPatientScreen> {
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
   final _medicalHistoryController = TextEditingController();
-  
+
   DateTime? _dateOfBirth;
   DateTime? _lastMenstrualPeriod;
 
@@ -45,14 +43,17 @@ class _RegisterPatientScreenState extends State<RegisterPatientScreen> {
   Future<void> _selectDate(BuildContext context, bool isDateOfBirth) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: isDateOfBirth 
-          ? DateTime.now().subtract(const Duration(days: 6570)) // ~18 años atrás
+      initialDate: isDateOfBirth
+          ? DateTime.now()
+              .subtract(const Duration(days: 6570)) // ~18 años atrás
           : DateTime.now().subtract(const Duration(days: 30)), // ~1 mes atrás
-      firstDate: isDateOfBirth 
-          ? DateTime.now().subtract(const Duration(days: 36500)) // ~100 años atrás
+      firstDate: isDateOfBirth
+          ? DateTime.now()
+              .subtract(const Duration(days: 36500)) // ~100 años atrás
           : DateTime.now().subtract(const Duration(days: 365)), // ~1 año atrás
-      lastDate: isDateOfBirth 
-          ? DateTime.now().subtract(const Duration(days: 3650)) // ~10 años atrás
+      lastDate: isDateOfBirth
+          ? DateTime.now()
+              .subtract(const Duration(days: 3650)) // ~10 años atrás
           : DateTime.now(),
       builder: (context, child) {
         return Theme(
@@ -77,13 +78,11 @@ class _RegisterPatientScreenState extends State<RegisterPatientScreen> {
   }
 
   void _onRegisterPatient(BuildContext context) {
-    if (_formKey.currentState!.validate() && 
-        _dateOfBirth != null && 
+    if (_formKey.currentState!.validate() &&
+        _dateOfBirth != null &&
         _lastMenstrualPeriod != null) {
       FocusScope.of(context).unfocus();
-      
-      // ================== CAMBIO CLAVE ==================
-      // Usar el evento RegisterPatient del BLoC
+
       BlocProvider.of<PatientBloc>(context).add(
         RegisterPatient(
           fullName: _fullNameController.text.trim(),
@@ -96,7 +95,6 @@ class _RegisterPatientScreenState extends State<RegisterPatientScreen> {
           medicalHistory: _medicalHistoryController.text.trim(),
         ),
       );
-      // =================================================
     } else if (_dateOfBirth == null || _lastMenstrualPeriod == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -109,8 +107,8 @@ class _RegisterPatientScreenState extends State<RegisterPatientScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => di.locator<PatientBloc>(),
+    return BlocProvider.value(
+      value: BlocProvider.of<PatientBloc>(context),
       child: Scaffold(
         backgroundColor: kPersonnelBackgroundColor,
         appBar: AppBar(
@@ -122,49 +120,49 @@ class _RegisterPatientScreenState extends State<RegisterPatientScreen> {
           ),
           elevation: 0,
         ),
-        body: BlocConsumer<PatientBloc, PatientState>(
+        body: BlocListener<PatientBloc, PatientState>(
           listener: (context, state) {
+            // Este listener se encarga de mostrar la confirmación
             if (state is PatientLoaded) {
               ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
                 ..showSnackBar(
                   const SnackBar(
-                    content: Text('¡Paciente registrado exitosamente!'),
+                    content: Text('¡Paciente registrada exitosamente!'),
                     backgroundColor: Colors.green,
                   ),
                 );
+              // Cerramos la pantalla después de mostrar el mensaje
               Navigator.of(context).pop();
             } else if (state is PatientError) {
               ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
                 ..showSnackBar(
                   SnackBar(
-                    content: Text('Error: ${state.message}'),
+                    content: Text('Error al registrar: ${state.message}'),
                     backgroundColor: Colors.red,
                   ),
                 );
             }
           },
-          builder: (context, state) {
-            return SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildHeader(),
-                      const SizedBox(height: 32),
-                      _buildForm(),
-                      const SizedBox(height: 32),
-                      _buildRegisterButton(context, state),
-                    ],
-                  ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildHeader(),
+                    const SizedBox(height: 32),
+                    _buildForm(),
+                    const SizedBox(height: 32),
+                    _buildRegisterButton(context),
+                  ],
                 ),
               ),
-            );
-          },
+            ),
+          ),
         ),
       ),
     );
@@ -226,9 +224,8 @@ class _RegisterPatientScreenState extends State<RegisterPatientScreen> {
           controller: _nationalIdController,
           label: 'DNI',
           icon: Icons.badge_outlined,
-          validator: (value) => (value == null || value.trim().isEmpty)
-              ? 'Ingresa el DNI'
-              : null,
+          validator: (value) =>
+              (value == null || value.trim().isEmpty) ? 'Ingresa el DNI' : null,
         ),
         const SizedBox(height: 16),
         _buildDateField(
@@ -236,7 +233,6 @@ class _RegisterPatientScreenState extends State<RegisterPatientScreen> {
           icon: Icons.cake_outlined,
           value: _dateOfBirth,
           onTap: () => _selectDate(context, true),
-          validator: (_) => _dateOfBirth == null ? 'Selecciona la fecha' : null,
         ),
         const SizedBox(height: 16),
         _buildTextField(
@@ -263,7 +259,6 @@ class _RegisterPatientScreenState extends State<RegisterPatientScreen> {
           icon: Icons.calendar_today_outlined,
           value: _lastMenstrualPeriod,
           onTap: () => _selectDate(context, false),
-          validator: (_) => _lastMenstrualPeriod == null ? 'Selecciona la fecha' : null,
         ),
         const SizedBox(height: 16),
         _buildTextField(
@@ -313,68 +308,71 @@ class _RegisterPatientScreenState extends State<RegisterPatientScreen> {
     required IconData icon,
     required DateTime? value,
     required VoidCallback onTap,
-    String? Function(String?)? validator,
   }) {
-    return InkWell(
+    // Usamos un controller interno para mostrar la fecha formateada.
+    final controller = TextEditingController(
+      text: value != null ? DateFormat('dd/MM/yyyy').format(value) : '',
+    );
+
+    return TextFormField(
+      controller: controller,
+      readOnly: true,
       onTap: onTap,
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon, color: kPersonnelPrimaryColor),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: kPersonnelPrimaryColor, width: 2),
-          ),
-          filled: true,
-          fillColor: Colors.white,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: 'Seleccionar fecha',
+        prefixIcon: Icon(icon, color: kPersonnelPrimaryColor),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
-        child: Text(
-          value != null 
-              ? DateFormat('dd/MM/yyyy').format(value)
-              : 'Seleccionar fecha',
-          style: TextStyle(
-            color: value != null ? kTextColor : Colors.grey.shade500,
-          ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: kPersonnelPrimaryColor, width: 2),
         ),
+        filled: true,
+        fillColor: Colors.white,
       ),
+      validator: (value) =>
+          (value == null || value.isEmpty) ? 'Este campo es requerido' : null,
     );
   }
 
-  Widget _buildRegisterButton(BuildContext context, PatientState state) {
-    final isLoading = state is PatientLoading;
+  Widget _buildRegisterButton(BuildContext context) {
+    return BlocBuilder<PatientBloc, PatientState>(
+      builder: (context, state) {
+        final isLoading = state is PatientLoading;
 
-    return SizedBox(
-      height: 56,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : () => _onRegisterPatient(context),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: kPersonnelPrimaryColor,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          elevation: 4,
-        ),
-        child: isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  color: Colors.white,
-                ),
-              )
-            : Text(
-                'Registrar Paciente',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+        return SizedBox(
+          height: 56,
+          child: ElevatedButton(
+            onPressed: isLoading ? null : () => _onRegisterPatient(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kPersonnelPrimaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-      ),
+              elevation: 4,
+            ),
+            child: isLoading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Colors.white,
+                    ),
+                  )
+                : Text(
+                    'Registrar Paciente',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+          ),
+        );
+      },
     );
   }
 }

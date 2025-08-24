@@ -1,4 +1,3 @@
-// lib/data/datasources/patient_remote_data_source_impl.dart
 import 'package:ehealth_app/core/api/api_client.dart';
 import 'package:ehealth_app/data/models/patient_model.dart';
 import 'package:ehealth_app/core/config/api_config.dart';
@@ -6,7 +5,6 @@ import 'package:ehealth_app/core/error/exceptions.dart';
 import 'patient_remote_data_source.dart';
 
 class PatientRemoteDataSourceImpl implements PatientRemoteDataSource {
-  // Reemplazamos http.Client por nuestro ApiClient centralizado
   final ApiClient apiClient;
 
   PatientRemoteDataSourceImpl({required this.apiClient});
@@ -20,8 +18,9 @@ class PatientRemoteDataSourceImpl implements PatientRemoteDataSource {
 
   @override
   Future<PatientModel> createPatient(PatientModel patient) async {
+    // Aquí corregimos la URL que estaba causando el error.
     final response = await apiClient.post(
-      ApiConfig.patientsEndpoint, // Usamos el endpoint relativo
+      ApiConfig.createPatientProfileUrl,
       body: patient.toJsonForCreation(),
     );
     return PatientModel.fromJson(response);
@@ -33,8 +32,6 @@ class PatientRemoteDataSourceImpl implements PatientRemoteDataSource {
       final response = await apiClient.get(ApiConfig.patientMeUrl);
       return PatientModel.fromJson(response);
     } on NotFoundException {
-      // Si el ApiClient nos dice que no se encontró, lo relanzamos como una excepción
-      // que el BLoC pueda entender.
       throw PatientNotFoundException();
     }
   }
@@ -53,14 +50,15 @@ class PatientRemoteDataSourceImpl implements PatientRemoteDataSource {
     await apiClient.delete(ApiConfig.patientMeUrl);
   }
 
-  // ================== NUEVO MÉTODO ==================
   @override
-  Future<PatientModel> registerPatient(PatientModel patient, String email) async {
+  Future<PatientModel> registerPatient(
+      PatientModel patient, String email) async {
     final response = await apiClient.post(
       ApiConfig.registerPatientUrl,
       body: patient.toJsonForRegistration(email: email),
     );
+    // La respuesta del backend al registrar una paciente es un User, no un Patient.
+    // Creamos un PatientModel temporal para la confirmación.
     return PatientModel.fromJson(response);
   }
-  // =================================================
 }

@@ -15,47 +15,47 @@ class ApiConfig {
     'Content-Type': 'application/json',
   };
 
-  // Endpoints
+  // Endpoints base
   static const String authEndpoint = '/auth';
   static const String patientsEndpoint = '/patients';
   static const String appointmentsEndpoint = '/appointments';
   static const String gamificationEndpoint = '/gamification';
 
-  // Métodos para construir URLs completas
-  static String getAuthUrl(String endpoint) => '$baseUrl$authEndpoint$endpoint';
-  static String getPatientsUrl(String endpoint) =>
-      '$baseUrl$patientsEndpoint$endpoint';
-  static String getAppointmentsUrl(String endpoint) =>
-      '$baseUrl$appointmentsEndpoint$endpoint';
-  static String getGamificationUrl(String endpoint) =>
-      '$baseUrl$gamificationEndpoint$endpoint';
-
   // URL completa para endpoints específicos
-  static String get loginUrl => getAuthUrl('/login');
-  static String get registerUrl => getAuthUrl('/register');
-  static String get allPatientsUrl => getPatientsUrl('');
-  static String get patientMeUrl => getPatientsUrl('/me');
-  static String get registerPatientUrl => getPatientsUrl('/register-patient');
-  static String get appointmentsUrl => getAppointmentsUrl('');
-  static String get achievementsUrl => getGamificationUrl('/achievements');
-  static String get userProgressUrl => getGamificationUrl('/user-progress/me');
+  static String get loginUrl => '$baseUrl$authEndpoint/login';
+  static String get registerUrl => '$baseUrl$authEndpoint/register';
+  static String get allPatientsUrl => '$baseUrl$patientsEndpoint';
+
+  // Esta era la URL que causaba el error "No host specified"
+  static String get createPatientProfileUrl => '$baseUrl$patientsEndpoint';
+
+  static String get patientMeUrl => '$baseUrl$patientsEndpoint/profile';
+  static String get registerPatientUrl =>
+      '$baseUrl$patientsEndpoint/register-patient';
+  static String get appointmentsUrl => '$baseUrl$appointmentsEndpoint';
+  static String get achievementsUrl =>
+      '$baseUrl$gamificationEndpoint/achievements';
+  static String get userProgressUrl =>
+      '$baseUrl$gamificationEndpoint/user-progress/me';
   static String get userProgressAddPointsUrl =>
-      getGamificationUrl('/user-progress/add-points');
+      '$baseUrl$gamificationEndpoint/user-progress/add-points';
   static String get userProgressIncrementAppointmentUrl =>
-      getGamificationUrl('/user-progress/increment-appointment');
+      '$baseUrl$gamificationEndpoint/user-progress/increment-appointment';
   static String get pregnancyMilestonesUrl =>
-      getGamificationUrl('/pregnancy-milestones');
-  static String get notificationsUrl => getGamificationUrl('/notifications/me');
+      '$baseUrl$gamificationEndpoint/pregnancy-milestones';
+  static String get notificationsUrl =>
+      '$baseUrl$gamificationEndpoint/notifications/me';
   static String get unreadNotificationsUrl =>
-      getGamificationUrl('/notifications/me/unread');
+      '$baseUrl$gamificationEndpoint/notifications/me/unread';
   static String get markAllNotificationsReadUrl =>
-      getGamificationUrl('/notifications/me/read-all');
+      '$baseUrl$gamificationEndpoint/notifications/me/read-all';
   static String get checkAchievementsUrl =>
-      getGamificationUrl('/check-achievements');
-  static String get dashboardUrl => getGamificationUrl('/dashboard');
+      '$baseUrl$gamificationEndpoint/check-achievements';
+  static String get dashboardUrl => '$baseUrl$gamificationEndpoint/dashboard';
 
   // Métodos para URLs con parámetros
-  static String getAppointmentUrl(int id) => getAppointmentsUrl('/$id');
+  static String getAppointmentUrl(int id) =>
+      '$baseUrl$appointmentsEndpoint/$id';
   static String getNotificationReadUrl(int notificationId) =>
-      getGamificationUrl('/notifications/$notificationId/read');
+      '$baseUrl$gamificationEndpoint/notifications/$notificationId/read';
 }
